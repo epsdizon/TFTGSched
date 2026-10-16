@@ -123,6 +123,7 @@ input.t.code{width:7ch;font-family:var(--f-mono);text-transform:uppercase}
 .days{display:flex;gap:4px;flex-wrap:wrap}
 .days button{border:2px solid var(--line);background:var(--bg);color:var(--muted);font:700 .78rem var(--f-body);width:40px;height:40px;border-radius:9px;cursor:pointer}
 .days button.uw{width:58px;height:52px;display:grid;place-content:center;gap:1px;line-height:1.1}
+button[data-train][aria-pressed="true"]{background:var(--m);color:var(--m-ink);border-color:var(--m-ink)}
 .days button.uw small{font-size:.68rem;font-weight:600}
 .days button.uw[class*="k-"]{border-color:transparent}
 .subcard{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:12px}
@@ -299,11 +300,19 @@ function compute(){
         free.splice(0,Math.min(nO,free.length)).forEach(i=>{shift[i]="O";opens++});
         free.forEach(i=>{shift[i]="C";closes++});
       }
+      // trainees never open alone
+      const tr=i=>!!staff[i].trainee;
+      let opn=w.filter(i=>shift[i]==="O"||shift[i]==="S"), trainAlone=false;
+      if(opn.length&&opn.every(tr)){
+        const t=opn.find(i=>!P[i].forced), sw=w.find(i=>!tr(i)&&!P[i].forced&&(shift[i]==="C"||shift[i]==="M"));
+        if(t!=null&&sw!=null){const a=shift[t];shift[t]=shift[sw];shift[sw]=a}else trainAlone=true;
+      }
       if(plan){const wi=Math.floor((dnum(iso)-dnum(plan.start))/7);w.forEach(i=>{if(shift[i]==="M"){cnt[i].mw[wi]=(cnt[i].mw[wi]||0)+1;midGiven[st.id+"|"+wi]=(midGiven[st.id+"|"+wi]||0)+1}})}
       let chk="";
       if(!n){if(staff.some(s=>s.home===st.id))chk="No staff"}
       else if(!opens)chk="No opener";
       else if(n>1&&closes<minC)chk="Need closer";
+      else if(trainAlone)chk="Trainee alone";
       storeDay[st.id].push({n,chk,who:w.map(i=>[i,shift[i]])});
     });
     staff.forEach((s,i)=>{
@@ -448,6 +457,7 @@ function renderSetup(){
       <label class="f">Name<input class="t" id="sn-${s.id}" data-f="name" value="${esc(s.name)}"></label>
       <label class="f">Store<select class="t" id="sh-${s.id}" data-f="home">${storeOpts(s.home)}</select></label>
       <div class="f">Usual week (tap a day to change it)<div class="days">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>{const v=usualDay(s,d);return `<button type="button" class="uw${v?" k-"+v:""}" data-wk="${d}" aria-label="${d}: ${USUALW[v]}">${d.slice(0,2)}<small>${USUALW[v]}</small></button>`}).join("")}</div></div>
+      <div class="f">Trainee<button type="button" class="btn" data-train="1" aria-pressed="${!!s.trainee}" style="min-width:150px">${s.trainee?"Yes, can't open alone":"No"}</button></div>
       <span style="margin-left:auto" class="delwrap"><button class="btn danger" data-del="staff">Remove</button></span></div>`).join("");
     html+=sec("staff","Staff",`${cfg.staff.length} people`,`<div class="rows">${staffRows}</div><div><button class="btn primary" id="addstaff">Add a person</button></div>`);
     // stores
@@ -520,6 +530,7 @@ function bindSetup(set){
       saveCfg();}
   });
   m.addEventListener("click",e=>{const t=e.target, box=t.closest("[data-kind]");
+    if(t.dataset.train&&box){const s=cfg.staff[+box.dataset.i];s.trainee=!s.trainee;t.setAttribute("aria-pressed",s.trainee);t.textContent=s.trainee?"Yes, can't open alone":"No";saveCfg();return}
     const wb=e.target.closest("button[data-wk]");
     if(wb&&box){const s=cfg.staff[+box.dataset.i],d=wb.dataset.wk;s.week=s.week||{};(s.weekly||[]).forEach(x=>{if(s.week[x]==null)s.week[x]="X"});s.weekly=[];
       const v=USUAL[(USUAL.indexOf(usualDay(s,d))+1)%USUAL.length];s.week[d]=v;
