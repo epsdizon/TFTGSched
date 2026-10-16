@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>TFTG Roster</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@600&display=swap">
 <style>
-/* Layout: a duty-roster board. Sticky top bar with month stepper, tabbed panels, wide grids scroll inside their own frames. */
+/* Layout: a duty-roster board. Sticky top bar with month stepper and three big tabs; wide grids scroll inside their own frames. */
 :root{
   --bg:#f3f5f4; --panel:#ffffff; --ink:#15211d; --muted:#5d6b66; --line:#d9e0dd; --soft:#e9eeec;
   --accent:#0f6b5c; --accent-ink:#ffffff; --mark:#e8a317;
   --s:#cfeedd; --s-ink:#11553a; --o:#d3e5fb; --o-ink:#17457a; --c:#e6dcf7; --c-ink:#4b2b85; --m:#fbe4c4; --m-ink:#7a4a08;
-  --x:#e3e6e5; --x-ink:#4a5552; --h:#fbd6dc; --h-ink:#8a1d33; --hol:#fff4d6; --sun:#f6efe4;
+  --x:#dfe3e2; --x-ink:#3c4744; --h:#fbd6dc; --h-ink:#8a1d33; --hol:#fff4d6; --sun:#f6efe4; --mv:#d7f0f5; --mv-ink:#0e5563;
   --bad:#b4232a; --bad-ink:#ffffff;
   --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
   --f-body:"Figtree",ui-sans-serif,system-ui,sans-serif;
@@ -23,109 +23,135 @@
   --bg:#0f1513; --panel:#17201d; --ink:#e4ece9; --muted:#97a6a0; --line:#2a3632; --soft:#1f2a26;
   --accent:#3fb59c; --accent-ink:#06120f; --mark:#f0b43a;
   --s:#1d4a36; --s-ink:#b5ecd0; --o:#1d3656; --o-ink:#bcd7fa; --c:#35285a; --c-ink:#dccdfb; --m:#4f3816; --m-ink:#f7d7a6;
-  --x:#2a3330; --x-ink:#a9b6b1; --h:#55222d; --h-ink:#ffc9d3; --hol:#3a321a; --sun:#2a251d;
+  --x:#2f3936; --x-ink:#c3cfca; --h:#55222d; --h-ink:#ffc9d3; --hol:#3a321a; --sun:#2a251d; --mv:#16424b; --mv-ink:#b9ecf5;
   --bad:#e5545b; --bad-ink:#1a0506; color-scheme:dark}}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;padding-bottom:env(safe-area-inset-bottom,0px)}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;padding-bottom:env(safe-area-inset-bottom,0px)}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
 [hidden]{display:none!important}
 .wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1500px;margin:0 auto}
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
-.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;padding-block:12px}
-.brand{font-family:var(--f-display);font-weight:800;font-size:1.35rem;letter-spacing:-.01em;display:flex;align-items:baseline;gap:8px}
-.brand small{font-family:var(--f-body);font-weight:500;font-size:.8rem;color:var(--muted)}
-.month{display:flex;align-items:center;gap:6px;margin-left:auto}
-.month h2{font-family:var(--f-display);font-weight:600;font-size:1.15rem;margin:0;min-width:9.5ch;text-align:center}
-.status{font-size:.78rem;color:var(--muted);min-width:8ch;text-align:right}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;padding-block:10px}
+.brand{font-family:var(--f-display);font-weight:800;font-size:1.3rem;letter-spacing:-.01em}
+.month{display:flex;align-items:center;gap:8px;margin-left:auto}
+.month h2{font-family:var(--f-display);font-weight:800;font-size:1.3rem;margin:0;min-width:10ch;text-align:center}
+.status{font-size:.82rem;color:var(--muted);min-width:9ch;text-align:right;font-weight:600}
 .status.bad{color:var(--bad)}
-nav{display:flex;gap:4px;overflow-x:auto}
-nav button{border:0;background:none;color:var(--muted);font:600 .9rem var(--f-body);padding:10px 12px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
-nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--mark)}
-main{padding-block:20px 48px;display:grid;gap:20px}
-.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);font:600 .85rem var(--f-body);padding:7px 12px;border-radius:8px;cursor:pointer}
+nav{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding-bottom:10px}
+nav button{border:2px solid var(--line);background:var(--bg);color:var(--ink);font:700 1rem var(--f-body);padding:12px 8px;border-radius:12px;cursor:pointer}
+nav button span{display:block;font-weight:500;font-size:.75rem;color:var(--muted)}
+nav button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+nav button[aria-selected="true"] span{color:var(--accent-ink);opacity:.85}
+main{padding-block:18px 60px;display:grid;gap:18px}
+.btn{border:2px solid var(--line);background:var(--panel);color:var(--ink);font:700 .95rem var(--f-body);padding:10px 16px;border-radius:10px;cursor:pointer;min-height:44px}
 .btn:hover{border-color:var(--accent)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn.danger{color:var(--bad)}
-.btn.icon{padding:6px 10px;font-size:1rem;line-height:1}
-:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
-.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.hint{color:var(--muted);font-size:.88rem;max-width:75ch;margin:0}
-.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--muted)}
+.btn.big{font-size:1.4rem;padding:4px 16px;line-height:1}
+:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.say{font-size:1.05rem;margin:0;max-width:70ch}
+.say b{font-weight:700}
+.hint{color:var(--muted);font-size:.9rem;max-width:75ch;margin:0}
+.chip{display:inline-flex;align-items:center;justify-content:center;min-width:30px;font:600 .8rem var(--f-mono);padding:3px 6px;border-radius:6px;font-style:normal}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:.92rem}
 .legend span{display:inline-flex;align-items:center;gap:6px}
-.chip{display:inline-block;font:600 .75rem var(--f-mono);padding:2px 6px;border-radius:5px;font-style:normal}
-.store{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.store h3{font-family:var(--f-display);font-weight:800;font-size:1.05rem;letter-spacing:.04em;margin:0;padding:12px 14px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
-.store h3 .code{font:600 .75rem var(--f-mono);color:var(--muted);letter-spacing:0}
-.store h3 .warn{margin-left:auto;font:600 .78rem var(--f-body);color:var(--bad);letter-spacing:0}
+.k-S{background:var(--s);color:var(--s-ink)} .k-O{background:var(--o);color:var(--o-ink)} .k-C{background:var(--c);color:var(--c-ink)} .k-M{background:var(--m);color:var(--m-ink)}
+.k-X,.k-L{background:var(--x);color:var(--x-ink)} .k-H{background:var(--h);color:var(--h-ink)} .k-V{background:var(--mv);color:var(--mv-ink)}
+/* brushes */
+.brushes{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:10px;position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--hdr,150px));z-index:4}
+.brushes .lab{font-weight:700}
+.brow{display:flex;flex-wrap:wrap;gap:8px}
+.brush{border:3px solid transparent;border-radius:12px;font:700 .95rem var(--f-body);padding:8px 14px;min-height:46px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.brush[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--panel) inset}
+.brush.erase{background:var(--bg);color:var(--ink);border-color:var(--line)}
+.brush.erase[aria-pressed="true"]{border-color:var(--ink)}
+details.more summary{cursor:pointer;font-weight:700;color:var(--accent);padding:4px 0}
+details.more[open] summary{margin-bottom:8px}
+.store{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.store h3{font-family:var(--f-display);font-weight:800;font-size:1.1rem;letter-spacing:.04em;margin:0;padding:12px 14px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.store h3 .rule{font:500 .82rem var(--f-body);color:var(--muted);letter-spacing:0}
+.store h3 .warn{margin-left:auto;font:700 .82rem var(--f-body);color:var(--bad);letter-spacing:0}
 .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table.grid{border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;min-width:100%}
-.grid th,.grid td{border-bottom:1px solid var(--soft);text-align:center;padding:0;height:30px;min-width:38px;font-size:.78rem}
-.grid thead th{font-weight:600;color:var(--muted);background:var(--panel)}
+.grid th,.grid td{border-bottom:1px solid var(--soft);text-align:center;padding:0;height:34px;min-width:40px;font-size:.8rem}
+.grid thead th{font-weight:700;color:var(--muted);background:var(--panel)}
 .grid thead tr:first-child th{font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;padding-top:4px}
 .grid thead tr:last-child th{color:var(--ink);font-family:var(--f-mono);border-bottom:1px solid var(--line)}
-.grid .name{position:sticky;left:0;z-index:1;background:var(--panel);text-align:left;padding:0 10px;min-width:120px;max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;font-size:.84rem;border-right:1px solid var(--line)}
+.grid .name{position:sticky;left:0;z-index:1;background:var(--panel);text-align:left;padding:0 10px;min-width:118px;max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700;font-size:.9rem;border-right:1px solid var(--line)}
 .grid .name em{font-style:normal;font-weight:500;color:var(--muted);font-size:.74rem}
+.grid tr.storehead td{background:var(--soft);font:800 .78rem var(--f-display);letter-spacing:.08em;text-align:left;padding:6px 10px;height:auto}
+.grid tr.storehead td.name{background:var(--soft)}
 .grid .hol{background:var(--hol)}
 .grid .sun{background:var(--sun)}
 .grid thead .hol{color:var(--mark)}
-.cell{display:flex;align-items:center;justify-content:center;height:24px;margin:3px 2px;border-radius:5px;font:600 .74rem var(--f-mono)}
-.k-S{background:var(--s);color:var(--s-ink)} .k-O{background:var(--o);color:var(--o-ink)} .k-C{background:var(--c);color:var(--c-ink)} .k-M{background:var(--m);color:var(--m-ink)}
-.k-X,.k-L{background:var(--x);color:var(--x-ink)} .k-H{background:var(--h);color:var(--h-ink)}
-.grid tr.sub td{color:var(--muted);font-size:.72rem;height:24px}
-.grid tr.sub td.name{font-weight:500}
-.flag{display:inline-block;background:var(--bad);color:var(--bad-ink);font:700 .6rem var(--f-body);padding:2px 3px;border-radius:4px;line-height:1.1;writing-mode:vertical-rl;transform:rotate(180deg);max-height:60px}
+.cell{display:flex;align-items:center;justify-content:center;height:28px;margin:3px 2px;border-radius:6px;font:600 .78rem var(--f-mono)}
+.grid tr.sub td{color:var(--muted);font-size:.74rem;height:26px}
+.grid tr.sub td.name{font-weight:600}
+.flag{display:inline-block;background:var(--bad);color:var(--bad-ink);font:700 .6rem var(--f-body);padding:2px 3px;border-radius:4px;line-height:1.1;writing-mode:vertical-rl;transform:rotate(180deg);max-height:64px}
 .grid tr.chk td{height:auto;padding-block:3px}
-.grid td.tot{font-family:var(--f-mono);font-weight:600;min-width:34px}
-.grid th.tot{min-width:34px}
+.grid td.tot{font-family:var(--f-mono);font-weight:600;min-width:38px}
 .grid .first{border-left:1px solid var(--line)}
-input.do{width:34px;height:26px;border:1px solid transparent;border-radius:5px;background:transparent;color:var(--ink);text-align:center;font:600 .74rem var(--f-mono);text-transform:uppercase;padding:0}
-input.do:hover{border-color:var(--line)}
-input.do:focus{border-color:var(--accent);background:var(--panel);outline:none}
-input.do.off{background:var(--x);color:var(--x-ink)}
-input.do.move{background:var(--o);color:var(--o-ink)}
-input.do.fix{background:var(--m);color:var(--m-ink)}
-input.do.wk{background:repeating-linear-gradient(135deg,var(--x),var(--x) 3px,transparent 3px,transparent 6px)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:14px}
-.card h3{font-family:var(--f-display);font-weight:800;margin:0;font-size:1.05rem}
-.rows{display:grid;gap:8px}
-.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--soft)}
+button.dc{width:36px;height:34px;margin:2px;border:1px dashed var(--line);border-radius:7px;background:transparent;color:var(--ink);font:600 .74rem var(--f-mono);cursor:pointer;padding:0}
+button.dc:hover{border-color:var(--accent);border-style:solid}
+button.dc.has{border-style:solid;border-color:transparent}
+button.dc.wk{background:repeating-linear-gradient(135deg,var(--x),var(--x) 3px,transparent 3px,transparent 7px);color:var(--x-ink)}
+button.dc.hd{background:repeating-linear-gradient(135deg,var(--h),var(--h) 3px,transparent 3px,transparent 7px);color:var(--h-ink)}
+/* today */
+.today{background:var(--panel);border:2px solid var(--accent);border-radius:14px;padding:14px;display:grid;gap:12px}
+.today h3{font-family:var(--f-display);font-weight:800;margin:0;font-size:1.2rem}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.tstore{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:6px;min-width:0}
+.tstore b{font-family:var(--f-display);letter-spacing:.05em}
+.tline{display:flex;gap:8px;align-items:baseline;font-size:.92rem}
+.tline .chip{min-width:72px;font-family:var(--f-body);font-weight:700}
+/* setup */
+details.sec{background:var(--panel);border:1px solid var(--line);border-radius:14px}
+details.sec>summary{cursor:pointer;padding:16px;font-family:var(--f-display);font-weight:800;font-size:1.1rem;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+details.sec>summary::after{content:"Open";font:700 .85rem var(--f-body);color:var(--accent)}
+details.sec[open]>summary::after{content:"Close"}
+details.sec>summary small{font:500 .85rem var(--f-body);color:var(--muted);display:block}
+.secbody{padding:0 16px 16px;display:grid;gap:14px}
+.rows{display:grid}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:end;padding:10px 0;border-bottom:1px solid var(--soft)}
 .row:last-child{border-bottom:0}
-label.f,.f{display:grid;gap:3px;font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-input.t,select.t{font:500 .9rem var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:6px 8px;min-width:0;text-transform:none;letter-spacing:0}
+.f{display:grid;gap:4px;font-size:.78rem;color:var(--muted);font-weight:700}
+input.t,select.t{font:500 1rem var(--f-body);color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:9px;padding:8px 10px;min-width:0;min-height:44px}
 input.t.num{width:7ch;font-family:var(--f-mono)}
-input.t.code{width:6ch;font-family:var(--f-mono);text-transform:uppercase}
-input.t.wide{width:min(100%,48ch)}
-.days{display:flex;gap:3px;flex-wrap:wrap}
-.days button{border:1px solid var(--line);background:var(--bg);color:var(--muted);font:600 .72rem var(--f-body);width:32px;height:28px;border-radius:6px;cursor:pointer}
-.days button[aria-pressed="true"]{background:var(--x);color:var(--ink);border-color:var(--muted)}
-.inline-confirm{display:inline-flex;gap:6px;align-items:center;font-size:.85rem;flex-wrap:wrap}
+input.t.code{width:7ch;font-family:var(--f-mono);text-transform:uppercase}
+.days{display:flex;gap:4px;flex-wrap:wrap}
+.days button{border:2px solid var(--line);background:var(--bg);color:var(--muted);font:700 .78rem var(--f-body);width:40px;height:40px;border-radius:9px;cursor:pointer}
+.days button[aria-pressed="true"]{background:var(--x);color:var(--ink);border-color:var(--ink)}
+.subcard{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:12px}
+.subcard h4{margin:0;font-family:var(--f-display);font-weight:800;letter-spacing:.04em}
+.midtable{border-collapse:collapse}
+.midtable th,.midtable td{padding:4px 6px;text-align:center;font-size:.85rem}
+.midtable th:first-child,.midtable td:first-child{text-align:left;font-weight:700}
+.inline-confirm{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
 .empty{padding:40px 16px;text-align:center;color:var(--muted)}
-.empty b{display:block;font-family:var(--f-display);font-size:1.2rem;color:var(--ink);margin-bottom:6px}
-ol.steps{margin:0;padding-left:1.3em;display:grid;gap:6px;max-width:75ch}
+.empty b{display:block;font-family:var(--f-display);font-size:1.3rem;color:var(--ink);margin-bottom:6px}
+ol.steps{margin:0;padding-left:1.3em;display:grid;gap:8px;max-width:75ch}
 code{font-family:var(--f-mono);font-size:.85em;background:var(--soft);padding:1px 5px;border-radius:4px}
-@media (max-width:560px){.month{margin-left:0;width:100%;justify-content:space-between}.status{min-width:0}}
+@media (max-width:560px){.month{margin-left:0;width:100%;justify-content:space-between}.status{min-width:0}.brushes{position:static}}
 </style>
 </head>
 <body>
-<header>
+<header id="hdr">
   <div class="wrap">
     <div class="bar">
-      <div class="brand">TFTG Roster <small>Torno stores</small></div>
+      <div class="brand">TFTG Roster</div>
       <div class="month">
-        <button class="btn icon" id="prev" aria-label="Previous month">‹</button>
+        <button class="btn big" id="prev" aria-label="Previous month">‹</button>
         <h2 id="mlabel">—</h2>
-        <button class="btn icon" id="next" aria-label="Next month">›</button>
+        <button class="btn big" id="next" aria-label="Next month">›</button>
         <span class="status" id="status"></span>
       </div>
     </div>
     <nav role="tablist" id="tabs">
-      <button role="tab" data-tab="schedule">Schedule</button>
-      <button role="tab" data-tab="dayoffs">Day offs</button>
-      <button role="tab" data-tab="staff">Staff</button>
-      <button role="tab" data-tab="stores">Stores</button>
-      <button role="tab" data-tab="holidays">Holidays</button>
-      <button role="tab" data-tab="settings">Settings</button>
+      <button role="tab" data-tab="dayoffs">1. Day offs<span>Tap who is off</span></button>
+      <button role="tab" data-tab="schedule">2. Schedule<span>See who works</span></button>
+      <button role="tab" data-tab="setup">Setup<span>Staff, stores, holidays</span></button>
     </nav>
   </div>
 </header>
@@ -139,42 +165,46 @@ code{font-family:var(--f-mono);font-size:.85em;background:var(--soft);padding:1p
 const DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
 const LETTERS="SOCM";
+const WORD={S:"Straight",O:"Opening",C:"Closing",M:"Mid shift",X:"Day off",H:"Holiday off",VL:"Vacation leave",SL:"Sick leave"};
 const LS="tftg-roster-settings";
 let conn={url:"",pin:""};
 try{conn=Object.assign(conn,JSON.parse(localStorage.getItem(LS)||"{}"))}catch(e){}
-let cfg=null, entries={}, cur, tab="schedule";
+let cfg=null, entries={}, cur, tab="dayoffs", brush="X", openSec="";
 let cfgLoaded=false, loadErr="", pendingCfg=false, pendingMonth=null, cfgTimer=null, monthTimer=null, loadSeq=0;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const pad=n=>String(n).padStart(2,"0");
 const mkey=(y,m)=>`${y}-${pad(m)}`;
 const uid=()=>Math.random().toString(36).slice(2,9);
+const mod=(a,n)=>((a%n)+n)%n;
+const dnum=iso=>{const [y,m,d]=iso.split("-").map(Number);return Date.UTC(y,m-1,d)/864e5};
 {const t=new Date();cur={y:t.getFullYear(),m:t.getMonth()+1};}
-const h0=location.hash.slice(1); if(["schedule","dayoffs","staff","stores","holidays","settings"].includes(h0))tab=h0;
+const h0=location.hash.slice(1); if(["schedule","dayoffs","setup"].includes(h0))tab=h0;
 function setStatus(t,bad){const s=$("#status");s.textContent=t;s.classList.toggle("bad",!!bad)}
+const num=(v,d)=>v===""||v==null||isNaN(Number(v))?d:Number(v);
 
 // ======================= scheduling rules =======================
-// Every store, every day: 1–2 openers and at least 2 closers. S counts as both.
-// Each person gets S at least sMin and at most sMax times per Mon–Sun week where possible.
+// Per store: openers (1 up to "most openers"), at least "closers" closers. Straight counts as opener and closer.
+// Straight per person per Mon–Sun week: aim for sMin, avoid going over sMax.
+// Mid-shift plan (Caloocan): each week of the cycle says how many mids each person gets.
 function compute(){
   const {y,m}=cur, N=new Date(y,m,0).getDate();
   const stores=cfg.stores, staff=cfg.staff, set=cfg.settings||{};
-  const sMin=Number(set.sMin??1), sMax=Number(set.sMax??2);
+  const sMin=num(set.sMin,1);
   const sById=Object.fromEntries(stores.map(s=>[s.id,s]));
   const byCode={}; stores.forEach(s=>{if(s.code)byCode[String(s.code).toUpperCase()]=s.id});
   const hols=(cfg.holidays||[]).filter(h=>h.date);
   const holOn=Object.fromEntries(hols.map(h=>[h.date,h]));
   const days=[], grid=staff.map(()=>[]);
-  const cnt=staff.map(()=>({S:0,O:0,C:0,M:0,off:0,reg:0,spec:0,ov:0,bk:0,wk:{}}));
+  const cnt=staff.map(()=>({S:0,O:0,C:0,M:0,off:0,reg:0,spec:0,ov:0,bk:0,wk:{},mw:{}}));
   const storeDay=Object.fromEntries(stores.map(s=>[s.id,[]]));
-  const firstDow=new Date(y,m-1,1).getDay(), off0=(firstDow+6)%7;
-  const N_=Math.max(staff.length,1);
+  const midGiven={}; // store|week -> count
+  const off0=(new Date(y,m-1,1).getDay()+6)%7, N_=Math.max(staff.length,1);
   for(let d=1;d<=N;d++){
     const dow=new Date(y,m-1,d).getDay(), iso=`${y}-${pad(m)}-${pad(d)}`, sun=dow===0;
-    const hol=holOn[iso]||null, week=Math.floor((d-1+off0)/7);
+    const hol=holOn[iso]||null, week=Math.floor((d-1+off0)/7), dayIdx=(dow+6)%7;
     days.push({d,dow,iso,hol,sun});
     const rot=i=>(i+d)%N_;
-    // 1. read requests
     const P=staff.map(s=>{
       let raw=String((entries[s.id]||{})[d]||"").trim().toUpperCase(), weekly=false;
       if(!raw&&(s.weekly||[]).includes(DOW[dow])){raw="X";weekly=true}
@@ -190,7 +220,7 @@ function compute(){
       return p;
     });
     const auto=i=>P[i].raw===""&&P[i].base===staff[i].home;
-    // 2. holiday: regular and special holidays rotate separately
+    // holidays: regular and special rotate separately
     if(hol){
       const type=hol.type==="special"?"special":"regular";
       const ord=hols.filter(h=>(h.type==="special"?"special":"regular")===type&&h.date.slice(0,4)===String(y)&&h.date<iso).length;
@@ -204,57 +234,70 @@ function compute(){
         el.forEach(i=>{if(!keep.has(i)){P[i].base=null;P[i].off="H"}});
       });
     }
-    // 3. overflow: extra people go to another store (e.g. Ascomo extras close at Florida)
+    // extras go to another store
     stores.forEach(st=>{
       if(!st.overflowTo||!sById[st.overflowTo]||st.maxOnDuty===""||st.maxOnDuty==null)return;
       const here=P.map((p,i)=>i).filter(i=>P[i].base===st.id);
-      let extra=here.length-Number(st.maxOnDuty); if(extra<=0)return;
-      const mov=here.filter(auto).sort((a,b)=>cnt[a].ov-cnt[b].ov||rot(a)-rot(b));
-      mov.slice(0,extra).forEach(i=>{P[i].base=st.overflowTo;cnt[i].ov++});
+      const extra=here.length-Number(st.maxOnDuty); if(extra<=0)return;
+      here.filter(auto).sort((a,b)=>cnt[a].ov-cnt[b].ov||rot(a)-rot(b)).slice(0,extra).forEach(i=>{P[i].base=st.overflowTo;cnt[i].ov++});
     });
-    // 4. backup: a store below its minimum borrows from another store (e.g. Jun/Jonas to Ascomo)
+    // short store borrows from another store
     stores.forEach(st=>{
       if(!st.backupFrom||!sById[st.backupFrom])return;
-      const min=Number(st.minOnDuty||1);
-      let short=min-P.filter(p=>p.base===st.id).length; if(short<=0)return;
-      const src=sById[st.backupFrom], srcMin=Number(src.minOnDuty||1);
+      let short=num(st.minOnDuty,1)-P.filter(p=>p.base===st.id).length; if(short<=0)return;
+      const src=sById[st.backupFrom], srcMin=num(src.minOnDuty,1);
       const pool=staff.map((s,i)=>i).filter(i=>staff[i].home===src.id&&auto(i)).sort((a,b)=>cnt[a].bk-cnt[b].bk||rot(a)-rot(b));
-      for(const i of pool){
-        if(short<=0)break;
-        if(P.filter(p=>p.base===src.id).length-1<srcMin)break;
-        P[i].base=st.id;cnt[i].bk++;short--;
-      }
+      for(const i of pool){if(short<=0)break;if(P.filter(p=>p.base===src.id).length-1<srcMin)break;P[i].base=st.id;cnt[i].bk++;short--;}
     });
-    // 5. shifts
+    // shifts
     const shift=staff.map(()=>null);
     const wS=i=>cnt[i].wk[week]||0;
     stores.forEach(st=>{
+      const minC=Math.max(1,num(st.closers,2)), maxO=Math.max(1,num(st.maxOpen,2));
       const w=P.map((p,i)=>i).filter(i=>P[i].base===st.id), n=w.length;
       let opens=0,closes=0;
       w.filter(i=>P[i].forced).forEach(i=>{const L=P[i].forced;shift[i]=L;if(L==="S"||L==="O")opens++;if(L==="S"||L==="C")closes++;});
       let free=w.filter(i=>!P[i].forced);
+      // mid-shift plan
+      const plan=st.mid&&Array.isArray(st.mid.weeks)&&st.mid.weeks.length&&st.mid.start?st.mid:null;
+      let quota=null, wkey=null;
+      if(plan){
+        const wi=Math.floor((dnum(iso)-dnum(plan.start))/7), row=plan.weeks[mod(wi,plan.weeks.length)]||{};
+        quota=row; wkey=st.id+"|"+wi;
+        const firstOfWeek=Math.max(1,d-dayIdx), lastOfWeek=Math.min(N,d-dayIdx+6);
+        const avail=lastOfWeek-firstOfWeek+1, daysLeft=lastOfWeek-d+1;
+        const total=Object.values(row).reduce((a,b)=>a+Number(b||0),0);
+        const target=Math.round(total*avail/7), given=midGiven[wkey]||0;
+        const needO=Math.max(0,1-opens), needC=Math.max(0,minC-closes);
+        if(n>=3&&target-given>0&&(target-given)/daysLeft>=0.5&&free.length-1>=needO+needC){
+          const cand=free.filter(i=>Number(row[staff[i].id]||0)-(cnt[i].mw[wi]||0)>0)
+            .sort((a,b)=>(Number(row[staff[b].id]||0)-(cnt[b].mw[wi]||0))-(Number(row[staff[a].id]||0)-(cnt[a].mw[wi]||0))||rot(a)-rot(b));
+          if(cand.length){const i=cand[0];shift[i]="M";free=free.filter(x=>x!==i)}
+        }
+      }
       const k=free.length;
       if(k){
-        const needO=Math.max(0,1-opens), needC=Math.max(0,2-closes);
+        const needO=Math.max(0,1-opens), needC=Math.max(0,minC-closes);
         let giveS=0;
         if(needO>0&&needC>0&&needO+needC>k) giveS=Math.min(k,needO+needC-k);
-        else if(n>=3&&opens<2&&free.some(i=>wS(i)<sMin)) giveS=1;
+        else if(n>=3&&opens<maxO&&free.some(i=>wS(i)<sMin)) giveS=1;
         if(giveS){
           free.sort((a,b)=>wS(a)-wS(b)||cnt[a].S-cnt[b].S||rot(a)-rot(b));
           free.splice(0,giveS).forEach(i=>{shift[i]="S";opens++;closes++});
         }
         let nO=Math.max(0,1-opens);
-        const nC=Math.max(0,2-closes);
-        if(n>=4&&opens+nO<2&&free.length-nO>nC)nO++;
+        const nC=Math.max(0,minC-closes);
+        if(n>=4&&opens+nO<maxO&&free.length-nO>nC)nO++;
         free.sort((a,b)=>cnt[a].O-cnt[b].O||rot(a)-rot(b));
         free.splice(0,Math.min(nO,free.length)).forEach(i=>{shift[i]="O";opens++});
         free.forEach(i=>{shift[i]="C";closes++});
       }
+      if(plan){const wi=Math.floor((dnum(iso)-dnum(plan.start))/7);w.forEach(i=>{if(shift[i]==="M"){cnt[i].mw[wi]=(cnt[i].mw[wi]||0)+1;midGiven[st.id+"|"+wi]=(midGiven[st.id+"|"+wi]||0)+1}})}
       let chk="";
       if(!n){if(staff.some(s=>s.home===st.id))chk="No staff"}
       else if(!opens)chk="No opener";
-      else if(n>1&&closes<2)chk="1 closer";
-      storeDay[st.id].push({n,chk});
+      else if(n>1&&closes<minC)chk="Need closer";
+      storeDay[st.id].push({n,chk,who:w.map(i=>[i,shift[i]])});
     });
     staff.forEach((s,i)=>{
       const p=P[i];
@@ -267,10 +310,10 @@ function compute(){
   return {N,days,grid,cnt,storeDay,sById};
 }
 
-// ======================= views =======================
+// ======================= helpers =======================
 const cls=x=>x.hol?"hol":x.sun?"sun":"";
 function headRows(days,extra){
-  return `<thead><tr><th class="name"></th>${days.map(x=>`<th class="${cls(x)}" title="${esc(x.hol?x.hol.name+" ("+(x.hol.type==="special"?"special":"regular")+")":"")}">${x.hol?(x.hol.type==="special"?"Spl":"Hol"):DOW[x.dow]}</th>`).join("")}${extra?extra(0):""}</tr>
+  return `<thead><tr><th class="name"></th>${days.map(x=>`<th class="${cls(x)}" title="${esc(x.hol?x.hol.name:"")}">${x.hol?(x.hol.type==="special"?"Spl":"Hol"):DOW[x.dow]}</th>`).join("")}${extra?extra(0):""}</tr>
   <tr><th class="name">${MONTHS[cur.m-1].slice(0,3).toUpperCase()} ${cur.y}</th>${days.map(x=>`<th class="${cls(x)}">${x.d}</th>`).join("")}${extra?extra(1):""}</tr></thead>`;
 }
 function scheduleTable(R){
@@ -278,17 +321,87 @@ function scheduleTable(R){
   cfg.stores.forEach(st=>{
     rows.push([st.name,...days.map(x=>x.hol?(x.hol.type==="special"?"SPECIAL HOL":"REG HOL"):DOW[x.dow])]);
     rows.push([`${MONTHS[cur.m-1].toUpperCase()} ${cur.y}`,...days.map(x=>x.d)]);
-    staff.forEach((s,i)=>{
-      const home=s.home===st.id;
+    staff.forEach((s,i)=>{const home=s.home===st.id;
       if(!home&&!grid[i].some(c=>c.store===st.id))return;
-      rows.push([s.name+(home?"":` (${sById[s.home]?.name||""})`),...grid[i].map(c=>home?c.disp:(c.store===st.id?c.k:""))]);
-    });
+      rows.push([s.name+(home?"":` (${sById[s.home]?.name||""})`),...grid[i].map(c=>home?c.disp:(c.store===st.id?c.k:""))]);});
     rows.push([""]);
   });
   return rows;
 }
+function ruleText(st){
+  const c=num(st.closers,2), o=num(st.maxOpen,2);
+  return `${o>1?"1–2 opening":"1 opening"}, ${c} closing${st.mid&&st.mid.weeks&&st.mid.weeks.length?", mid shift rotation":""}`;
+}
+
+// ======================= 1. Day offs =======================
+function brushBtn(v,label,k){return `<button type="button" class="brush k-${k}" data-b="${esc(v)}" aria-pressed="${brush===v}">${esc(label)}</button>`}
+function renderDayoffs(){
+  const R=compute(), {days,grid,cnt,sById}=R, staff=cfg.staff;
+  const TOT=["Off","S","O","C","M"];
+  const extra=r=>TOT.map((t,k)=>`<th class="tot${k?"":" first"}">${r?t:""}</th>`).join("");
+  let body="";
+  cfg.stores.forEach(st=>{
+    const ids=staff.map((s,i)=>i).filter(i=>staff[i].home===st.id); if(!ids.length)return;
+    body+=`<tr class="storehead"><td class="name">${esc(st.name)}</td><td colspan="${days.length+TOT.length}"></td></tr>`;
+    body+=ids.map(i=>{const s=staff[i], e=entries[s.id]||{};
+      return `<tr><td class="name" title="${esc(s.name)}">${esc(s.name)}</td>${days.map((x,j)=>`<td class="${cls(x)}">${cellBtn(s,x.d,e[x.d]||"",grid[i][j])}</td>`).join("")}${[cnt[i].off,cnt[i].S,cnt[i].O,cnt[i].C,cnt[i].M].map((v,k)=>`<td class="tot${k?"":" first"}">${v}</td>`).join("")}</tr>`}).join("");
+  });
+  const nextM=cur.m===12?MONTHS[0]:MONTHS[cur.m];
+  $("#main").innerHTML=`
+  <p class="say"><b>Pick a button, then tap the boxes.</b> Tap a box again to remove it. The schedule fills in by itself.</p>
+  <div class="brushes" id="brushes">
+    <div class="brow">${brushBtn("X","Day off","X")}${brushBtn("VL","Vacation leave","X")}${brushBtn("SL","Sick leave","X")}<button type="button" class="brush erase" data-b="" aria-pressed="${brush===""}">Eraser</button></div>
+    <details class="more"${/^[A-Z]{1,3}$/.test(brush)&&!["X","VL","SL"].includes(brush)||brush.includes("-")||brush==="W"?" open":""}><summary>More buttons</summary>
+      <div class="brow">${cfg.stores.map(s=>brushBtn(String(s.code).toUpperCase(),"Work at "+s.name,"V")).join("")}</div>
+      <div class="brow" style="margin-top:8px">${["O","C","S","M"].map(L=>brushBtn(L,"Must be "+WORD[L],L)).join("")}${brushBtn("W","Must work (skip weekly off)","S")}</div>
+    </details>
+  </div>
+  <div class="store"><div class="scroll"><table class="grid">${headRows(days,extra)}<tbody>${body}</tbody></table></div></div>
+  <p class="hint">Striped boxes are already off: grey stripes are weekly days off (set in Setup), pink stripes are holiday days off. Staff send their requests in the last week of the month, so press <b>›</b> to go to ${nextM} first.</p>
+  <div class="tools"><span id="clearwrap"><button class="btn danger" id="clear">Clear all of ${MONTHS[cur.m-1]}</button></span></div>`;
+  setHdr();
+  $("#brushes").addEventListener("click",e=>{const b=e.target.closest(".brush");if(!b)return;brush=b.dataset.b;document.querySelectorAll(".brush").forEach(x=>x.setAttribute("aria-pressed",x===b))});
+  $("#main").addEventListener("click",e=>{
+    const t=e.target.closest("button.dc"); if(!t)return;
+    const sid=t.dataset.s, d=t.dataset.d, old=(entries[sid]||{})[d]||"";
+    const v=(brush===""||old===brush)?"":brush;
+    entries[sid]=entries[sid]||{}; if(v)entries[sid][d]=v; else delete entries[sid][d];
+    if(!Object.keys(entries[sid]).length)delete entries[sid];
+    saveMonth(); refreshDayoffs();
+  });
+  $("#clear").onclick=()=>{$("#clearwrap").innerHTML=`<span class="inline-confirm">Remove every box you tapped in ${MONTHS[cur.m-1]}? <button class="btn danger" id="cy">Yes, clear</button><button class="btn" id="cn">No, keep</button></span>`;
+    $("#cy").onclick=()=>{entries={};saveMonth();render()};$("#cn").onclick=render;};
+}
+function cellBtn(s,d,v,c){
+  let k="",txt=v,extra="";
+  if(v){k="has k-"+(v==="X"||v==="VL"||v==="SL"?"X":LETTERS.includes(v[0])&&(v.length===1||v[1]==="-")?v[0]:v==="W"?"S":"V")}
+  else if(c&&c.weekly){extra=" wk";txt="X"}
+  else if(c&&c.k==="H"){extra=" hd";txt="H"}
+  return `<button type="button" class="dc ${k}${extra}" data-s="${s.id}" data-d="${d}" aria-label="${esc(s.name)} day ${d}${v?": "+esc(WORD[v]||v):""}">${esc(txt)}</button>`;
+}
+function refreshDayoffs(){
+  const R=compute();
+  cfg.staff.forEach((s,i)=>{
+    const first=document.querySelector(`button.dc[data-s="${s.id}"]`); if(!first)return;
+    const tr=first.closest("tr"), e=entries[s.id]||{};
+    R.days.forEach((x,j)=>{const b=tr.querySelector(`button.dc[data-d="${x.d}"]`);if(b)b.outerHTML=cellBtn(s,x.d,e[x.d]||"",R.grid[i][j])});
+    const tds=tr.querySelectorAll("td.tot"), c=R.cnt[i];
+    [c.off,c.S,c.O,c.C,c.M].forEach((v,k)=>{if(tds[k])tds[k].textContent=v});
+  });
+}
+function setHdr(){const h=$("#hdr");if(h)document.documentElement.style.setProperty("--hdr",h.offsetHeight+8+"px")}
+
+// ======================= 2. Schedule =======================
 function renderSchedule(){
-  const R=compute(), {days,grid,storeDay,sById}=R, staff=cfg.staff;
+  const R=compute(), {days,grid,storeDay,sById,cnt}=R, staff=cfg.staff;
+  const t=new Date(); const isNow=t.getFullYear()===cur.y&&t.getMonth()+1===cur.m;
+  let todayHtml="";
+  if(isNow){
+    const j=t.getDate()-1, x=days[j];
+    todayHtml=`<section class="today"><h3>Today, ${DOW[x.dow]} ${MONTHS[cur.m-1]} ${x.d}${x.hol?` · ${esc(x.hol.name)}`:""}</h3><div class="tgrid">${cfg.stores.map(st=>{
+      const who=storeDay[st.id][j].who; if(!who.length)return `<div class="tstore"><b>${esc(st.name)}</b><span class="hint">Nobody scheduled</span></div>`;
+      return `<div class="tstore"><b>${esc(st.name)}</b>${["S","O","M","C"].map(L=>{const names=who.filter(w=>w[1]===L).map(w=>esc(staff[w[0]].name));return names.length?`<div class="tline"><i class="chip k-${L}">${WORD[L]}</i><span>${names.join(", ")}</span></div>`:""}).join("")}</div>`}).join("")}</div></section>`;
+  }
   let warn=0;
   const blocks=cfg.stores.map(st=>{
     const home=staff.map((s,i)=>i).filter(i=>staff[i].home===st.id);
@@ -297,151 +410,138 @@ function renderSchedule(){
     const body=rows.map(i=>{const isHome=staff[i].home===st.id;
       return `<tr><td class="name" title="${esc(staff[i].name)}">${esc(staff[i].name)}${isHome?"":` <em>${esc(sById[staff[i].home]?.name||"")}</em>`}</td>${grid[i].map((c,j)=>{
         if(!isHome&&c.store!==st.id)return `<td class="${cls(days[j])}"></td>`;
-        return `<td class="${cls(days[j])}"><span class="cell k-${c.k}">${esc(isHome?c.disp:c.k)}</span></td>`}).join("")}</tr>`}).join("");
-    return `<section class="store"><h3>${esc(st.name)} <span class="code">${esc(st.code)}</span>${nW?`<span class="warn">${nW} day${nW>1?"s":""} flagged</span>`:""}</h3>
+        return `<td class="${cls(days[j])}"><span class="cell k-${isHome&&c.store&&c.store!==st.id?"V":c.k}" title="${esc(WORD[c.k]||c.disp)}">${esc(isHome?c.disp:c.k)}</span></td>`}).join("")}</tr>`}).join("");
+    return `<section class="store"><h3>${esc(st.name)} <span class="rule">${ruleText(st)}</span>${nW?`<span class="warn">${nW} day${nW>1?"s":""} need help</span>`:""}</h3>
       ${rows.length?`<div class="scroll"><table class="grid">${headRows(days)}<tbody>${body}
-      <tr class="sub"><td class="name">On duty</td>${sd.map((x,j)=>`<td class="${cls(days[j])}">${x.n}</td>`).join("")}</tr>
-      <tr class="sub chk"><td class="name">Check</td>${sd.map((x,j)=>`<td class="${cls(days[j])}">${x.chk?`<span class="flag">${esc(x.chk)}</span>`:""}</td>`).join("")}</tr>
-      </tbody></table></div>`:`<p class="hint" style="padding:0 14px 14px">No staff here yet. Add them on the Staff tab.</p>`}</section>`;
+      <tr class="sub"><td class="name">People working</td>${sd.map((x,j)=>`<td class="${cls(days[j])}">${x.n}</td>`).join("")}</tr>
+      <tr class="sub chk"><td class="name">Problems</td>${sd.map((x,j)=>`<td class="${cls(days[j])}">${x.chk?`<span class="flag">${esc(x.chk)}</span>`:""}</td>`).join("")}</tr>
+      </tbody></table></div>`:`<p class="hint" style="padding:0 14px 14px">No staff here yet. Add them in Setup.</p>`}</section>`;
   }).join("");
-  $("#main").innerHTML=`<div class="tools"><button class="btn primary" id="copy">Copy for Excel / Sheets</button><span class="hint" id="copymsg">${warn?`${warn} store-day${warn>1?"s":""} flagged in red below.`:"Every store has its openers and two closers every day."} This month is also written to its own tab in your Google Sheet when you save.</span></div>
-  <div class="legend"><span><i class="chip k-S">S</i>Straight (opens and closes)</span><span><i class="chip k-O">O</i>Opening</span><span><i class="chip k-C">C</i>Closing</span><span><i class="chip k-M">M</i>Mid</span><span><i class="chip k-X">X</i>Day off</span><span><i class="chip k-H">H</i>Holiday off</span><span><i class="chip k-C">C-F</i>Working at store code F</span></div>
-  ${blocks}`;
+  $("#main").innerHTML=`${todayHtml}
+  <p class="say">${warn?`<b>${warn} red box${warn>1?"es":""}</b> below: a store is missing an opener or closer that day. Fix it on the Day offs page by giving someone a different day off.`:`<b>All good.</b> Every store has its openers and closers every day.`}</p>
+  <div class="legend"><span><i class="chip k-O">O</i>Opening</span><span><i class="chip k-C">C</i>Closing</span><span><i class="chip k-S">S</i>Straight (open to close)</span><span><i class="chip k-M">M</i>Mid shift</span><span><i class="chip k-X">X</i>Day off</span><span><i class="chip k-H">H</i>Holiday off</span><span><i class="chip k-V">C-F</i>Working at another store (F = Florida)</span></div>
+  ${blocks}
+  <div class="tools"><button class="btn primary" id="copy">Copy schedule</button><span class="hint" id="copymsg">Paste it into Excel, Google Sheets or Messenger. It is also saved in your Google Sheet as a tab named ${mkey(cur.y,cur.m)}.</span></div>`;
   $("#copy").onclick=()=>{
     const text=scheduleTable(R).map(r=>r.join("\t")).join("\n"), msg=$("#copymsg");
-    const fb=()=>{const ta=document.createElement("textarea");ta.value=text;ta.style.cssText="width:100%;height:120px";msg.replaceWith(ta);ta.select()};
-    try{navigator.clipboard.writeText(text).then(()=>msg.textContent="Copied. Paste into cell A1 of an empty sheet.",fb)}catch(e){fb()}
+    const fb=()=>{const ta=document.createElement("textarea");ta.value=text;ta.style.cssText="width:100%;height:140px";msg.replaceWith(ta);ta.select()};
+    try{navigator.clipboard.writeText(text).then(()=>msg.textContent="Copied. Now paste it where you need it.",fb)}catch(e){fb()}
   };
 }
-function inputCls(v,c){
-  v=String(v||"").trim().toUpperCase();
-  if(!v)return c&&c.weekly?"wk":"";
-  if((v.length===1&&LETTERS.includes(v))||/^[SOCM]-/.test(v))return "fix";
-  if(cfg.stores.some(s=>String(s.code).toUpperCase()===v))return "move";
-  return v==="W"?"":"off";
-}
-const TOTS=["Off","S","O","C","Reg","Spl"];
-const totVals=c=>[c.off,c.S,c.O,c.C,c.reg,c.spec];
-function renderDayoffs(){
-  const R=compute(), {days,grid,cnt,sById}=R, staff=cfg.staff;
-  const extra=r=>TOTS.map((t,k)=>`<th class="tot${k?"":" first"}">${r?t:(k===4?"Hol":"")}</th>`).join("");
-  const order=cfg.stores.flatMap(st=>staff.map((s,i)=>i).filter(i=>staff[i].home===st.id));
-  const rows=order.map(i=>{const s=staff[i], e=entries[s.id]||{};
-    return `<tr><td class="name" title="${esc(s.name)}">${esc(s.name)} <em>${esc(sById[s.home]?.code||"")}</em></td>${days.map((x,j)=>{
-      const v=e[x.d]||"", c=grid[i][j], ph=(!v&&c.weekly)?"X":(!v&&c.k==="H")?"H":"";
-      return `<td class="${cls(x)}"><input class="do ${inputCls(v,c)}" id="do-${s.id}-${x.d}" data-s="${s.id}" data-d="${x.d}" value="${esc(v)}" placeholder="${ph}" maxlength="6" autocomplete="off" aria-label="${esc(s.name)} day ${x.d}"></td>`}).join("")}${totVals(cnt[i]).map((v,k)=>`<td class="tot${k?"":" first"}">${v}</td>`).join("")}</tr>`}).join("");
-  $("#main").innerHTML=`<p class="hint">Staff give their requests in the last week of the month, so go to next month with <b>›</b> and type them in. <b>X</b> = day off (or VL, SL). A store code (A, F, P, R, CAL) sends someone to that store for the day. <b>S</b>, <b>O</b>, <b>C</b> or <b>M</b> fixes their shift; <b>C-F</b> fixes a shift at another store. Blank = the roster decides. Striped cells are weekly offs; type <b>W</b> to make them work that day. Reg / Spl count regular and special holidays worked.</p>
-  <div class="tools"><span id="clearwrap"><button class="btn danger" id="clear">Clear this month</button></span></div>
-  <div class="store"><div class="scroll"><table class="grid">${headRows(days,extra)}<tbody>${rows}</tbody></table></div></div>`;
-  $("#main").addEventListener("input",ev=>{
-    const t=ev.target; if(!t.classList.contains("do"))return;
-    const sid=t.dataset.s, d=t.dataset.d, v=t.value.trim().toUpperCase();
-    entries[sid]=entries[sid]||{}; if(v)entries[sid][d]=v; else delete entries[sid][d];
-    if(!Object.keys(entries[sid]).length)delete entries[sid];
-    saveMonth();
-    const R2=compute();
-    cfg.staff.forEach((s,i)=>{
-      const tr=document.getElementById(`do-${s.id}-1`)?.closest("tr"); if(!tr)return;
-      const tds=tr.querySelectorAll("td.tot"); totVals(R2.cnt[i]).forEach((v,k)=>{if(tds[k])tds[k].textContent=v});
-      R2.days.forEach((x,j)=>{const inp=document.getElementById(`do-${s.id}-${x.d}`);if(!inp)return;const c=R2.grid[i][j];
-        inp.className="do "+inputCls(inp.value,c);inp.placeholder=(!inp.value&&c.weekly)?"X":(!inp.value&&c.k==="H")?"H":"";});
-    });
-  });
-  $("#clear").onclick=()=>{$("#clearwrap").innerHTML=`<span class="inline-confirm">Remove every entry for ${MONTHS[cur.m-1]}? <button class="btn danger" id="cy">Clear</button><button class="btn" id="cn">Keep</button></span>`;
-    $("#cy").onclick=()=>{entries={};saveMonth();render()};$("#cn").onclick=render;};
-}
+
+// ======================= Setup =======================
 const storeOpts=(sel,blank)=>(blank?`<option value="">${blank}</option>`:"")+cfg.stores.map(s=>`<option value="${s.id}"${s.id===sel?" selected":""}>${esc(s.name)}</option>`).join("");
-function renderStaff(){
-  const rows=cfg.staff.map((s,i)=>`<div class="row" data-i="${i}">
-    <label class="f">Name<input class="t" id="sn-${s.id}" data-f="name" value="${esc(s.name)}"></label>
-    <label class="f">Store<select class="t" id="sh-${s.id}" data-f="home">${storeOpts(s.home)}</select></label>
-    <div class="f">Weekly off<div class="days">${DOW.map(d=>`<button type="button" data-wk="${d}" aria-pressed="${(s.weekly||[]).includes(d)}">${d.slice(0,2)}</button>`).join("")}</div></div>
-    <span style="margin-left:auto" class="delwrap"><button class="btn danger" data-del="1">Remove</button></span></div>`).join("");
-  $("#main").innerHTML=`<div class="card"><h3>Staff</h3><p class="hint">Each person belongs to one store. Moves between stores (Ascomo extras to Florida, Jun or Jonas to Ascomo) are set on the Stores tab and happen automatically.</p>
-  <div class="rows" id="srows">${rows||`<p class="hint">No staff yet.</p>`}</div><div><button class="btn primary" id="add">Add staff</button></div></div>`;
-  const b=$("#srows");
-  b.addEventListener("change",e=>{const r=e.target.closest(".row"),f=e.target.dataset.f;if(!r||!f)return;const s=cfg.staff[r.dataset.i];
-    s[f]=f==="name"?e.target.value.trim().toUpperCase():e.target.value;if(f==="name")e.target.value=s[f];saveCfg();});
-  b.addEventListener("click",e=>{const r=e.target.closest(".row");if(!r)return;const s=cfg.staff[r.dataset.i],t=e.target;
-    if(t.dataset.wk){s.weekly=s.weekly||[];s.weekly=s.weekly.includes(t.dataset.wk)?s.weekly.filter(x=>x!==t.dataset.wk):[...s.weekly,t.dataset.wk];t.setAttribute("aria-pressed",s.weekly.includes(t.dataset.wk));saveCfg();}
-    if(t.dataset.del)r.querySelector(".delwrap").innerHTML=`<span class="inline-confirm">Remove ${esc(s.name)}? <button class="btn danger" data-yes="1">Remove</button><button class="btn" data-no="1">Keep</button></span>`;
-    if(t.dataset.yes){cfg.staff.splice(r.dataset.i,1);saveCfg();render()}
-    if(t.dataset.no)render();});
-  $("#add").onclick=()=>{if(!cfg.stores.length)return;const s={id:uid(),name:"NEW STAFF",home:cfg.stores[0].id,weekly:[]};cfg.staff.push(s);saveCfg();render();const el=document.getElementById("sn-"+s.id);if(el){el.focus();el.select()}};
+function sec(id,title,sub,body){return `<details class="sec" data-sec="${id}"${openSec===id?" open":""}><summary><span>${title}<small>${sub}</small></span></summary><div class="secbody">${body}</div></details>`}
+function renderSetup(){
+  const set=cfg?(cfg.settings||(cfg.settings={sMin:1,sMax:2})):{};
+  let html="";
+  if(cfgLoaded){
+    // staff
+    const staffRows=cfg.staff.map((s,i)=>`<div class="row" data-kind="staff" data-i="${i}">
+      <label class="f">Name<input class="t" id="sn-${s.id}" data-f="name" value="${esc(s.name)}"></label>
+      <label class="f">Store<select class="t" id="sh-${s.id}" data-f="home">${storeOpts(s.home)}</select></label>
+      <div class="f">Off every week on<div class="days">${DOW.map(d=>`<button type="button" data-wk="${d}" aria-pressed="${(s.weekly||[]).includes(d)}">${d.slice(0,2)}</button>`).join("")}</div></div>
+      <span style="margin-left:auto" class="delwrap"><button class="btn danger" data-del="staff">Remove</button></span></div>`).join("");
+    html+=sec("staff","Staff",`${cfg.staff.length} people`,`<div class="rows">${staffRows}</div><div><button class="btn primary" id="addstaff">Add a person</button></div>`);
+    // stores
+    const storeCards=cfg.stores.map((st,i)=>{
+      const home=cfg.staff.filter(s=>s.home===st.id), mid=st.mid&&st.mid.weeks?st.mid:null;
+      const midHtml=mid?`<div class="f">Mid shift plan, starts the week of<input class="t" type="date" id="ms-${st.id}" data-mid="start" value="${esc(mid.start)}" style="width:auto"></div>
+        <div class="scroll"><table class="midtable"><thead><tr><th>Person</th>${mid.weeks.map((w,k)=>`<th>Week ${k+1}</th>`).join("")}</tr></thead><tbody>
+        ${home.map(s=>`<tr><td>${esc(s.name)}</td>${mid.weeks.map((w,k)=>`<td><input class="t num" type="number" min="0" max="7" id="mw-${st.id}-${s.id}-${k}" data-mw="${k}" data-sid="${s.id}" value="${num(w[s.id],0)}"></td>`).join("")}</tr>`).join("")}</tbody></table></div>
+        <div class="tools"><button class="btn" data-midadd="1">Add a week</button>${mid.weeks.length>1?`<button class="btn" data-midrm="1">Remove last week</button>`:""}<button class="btn danger" data-midoff="1">Turn off mid shifts</button></div>
+        <p class="hint">Numbers are how many mid shifts each person gets that week. After the last week it starts again at week 1.</p>`
+        :`<div><button class="btn" data-midon="1">Add a mid shift plan</button></div>`;
+      return `<div class="subcard" data-kind="store" data-i="${i}"><h4>${esc(st.name)}</h4>
+      <div class="tools"><label class="f">Name<input class="t" id="stn-${st.id}" data-f="name" value="${esc(st.name)}"></label>
+        <label class="f">Short code<input class="t code" id="stc-${st.id}" data-f="code" value="${esc(st.code)}"></label>
+        <label class="f">Openers, most<input class="t num" type="number" min="1" max="3" id="sto-${st.id}" data-n="maxOpen" value="${num(st.maxOpen,2)}"></label>
+        <label class="f">Closers needed<input class="t num" type="number" min="1" max="4" id="stcl-${st.id}" data-n="closers" value="${num(st.closers,2)}"></label>
+        <label class="f">Work on holidays<input class="t num" type="number" min="0" id="sthc-${st.id}" data-n="holCrew" value="${st.holCrew??""}" placeholder="all"></label></div>
+      <div class="tools"><label class="f">Most people here<input class="t num" type="number" min="1" id="stmx-${st.id}" data-n="maxOnDuty" value="${st.maxOnDuty??""}" placeholder="any"></label>
+        <label class="f">Extra people go to<select class="t" id="stov-${st.id}" data-f="overflowTo">${storeOpts(st.overflowTo||"","Stay here")}</select></label>
+        <label class="f">If nobody, borrow from<select class="t" id="stbk-${st.id}" data-f="backupFrom">${storeOpts(st.backupFrom||"","Nobody")}</select></label></div>
+      ${midHtml}
+      <div class="delwrap"><button class="btn danger" data-del="store">Remove store</button></div></div>`}).join("");
+    html+=sec("stores","Stores and shift rules","Openers, closers, mid shifts, who covers who",`
+      <div class="subcard"><h4>Straight shifts</h4><p class="hint">Straight means open to close, so it counts as an opener and a closer. A person working alone always gets Straight. Otherwise the roster tries to give each person this many Straights a week:</p>
+      <div class="tools"><label class="f">At least<input class="t num" type="number" min="0" max="7" id="smin" value="${num(set.sMin,1)}"></label><label class="f">At most<input class="t num" type="number" min="0" max="7" id="smax" value="${num(set.sMax,2)}"></label></div></div>
+      ${storeCards}<div><button class="btn primary" id="addstore">Add a store</button></div>`);
+    // holidays
+    const list=(cfg.holidays||[]).map((h,i)=>({...h,i})).sort((a,b)=>(a.date||"9").localeCompare(b.date||"9"));
+    html+=sec("holidays","Holidays",`${list.length} dates · regular and special share the days off evenly`,`
+      <p class="hint">Regular holidays (double pay) and special non-working days (+30%) take turns separately, so everyone gets the same share of both. "Work on holidays" for each store is set under Stores.</p>
+      <div class="rows">${list.map(h=>`<div class="row" data-kind="hol" data-i="${h.i}"><input class="t" type="date" id="hd-${h.i}" data-f="date" value="${esc(h.date)}">
+        <select class="t" id="ht-${h.i}" data-f="type"><option value="regular"${h.type!=="special"?" selected":""}>Regular</option><option value="special"${h.type==="special"?" selected":""}>Special</option></select>
+        <input class="t" id="hn-${h.i}" data-f="name" value="${esc(h.name)}" style="flex:1;min-width:12ch"><button class="btn danger" data-del="hol">Remove</button></div>`).join("")}</div>
+      <div><button class="btn primary" id="addhol">Add a holiday</button></div>`);
+  }
+  html+=sec("connect","Google Sheet connection",cfgLoaded?"Connected":"Not connected yet",`
+    <p class="hint">Your roster is saved in the <b>TFTG Roster Data</b> sheet in your Schedtftg folder. Do steps 1 to 4 once. Do step 5 on each phone or computer you use.</p>
+    <ol class="steps"><li>Open the <b>TFTG Roster Data</b> sheet and go to <b>Extensions › Apps Script</b>.</li>
+    <li>Delete what's there and paste the code from <a href="https://github.com/epsdizon/TFTGSched/blob/main/apps-script/Code.gs" target="_blank" rel="noopener">Code.gs</a>.</li>
+    <li>On line 1, change <code>CHANGE-ME</code> to a PIN only you know. Click Save.</li>
+    <li>Click <b>Deploy › New deployment › Web app</b>. Set <b>Execute as: Me</b> and <b>Who has access: Anyone</b>. Click Deploy and allow access.</li>
+    <li>Copy the <b>Web app URL</b> and paste it here with your PIN.</li></ol>
+    <form id="cf" class="tools" style="align-items:end">
+      <label class="f" style="flex:1;min-width:220px">Web app URL<input class="t" style="width:100%" id="curl" value="${esc(conn.url)}" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
+      <label class="f">PIN<input class="t" id="cpin" type="password" value="${esc(conn.pin)}" autocomplete="off" style="width:12ch"></label>
+      <button class="btn primary" type="submit">Connect</button></form>
+    <p class="hint" id="cmsg">${loadErr?esc(loadErr):(cfgLoaded?"Connected. Everything you change is saved to the sheet.":"")}</p>`);
+  $("#main").innerHTML=html;
+  bindSetup(set);
 }
-function renderStores(){
-  const set=cfg.settings||(cfg.settings={sMin:1,sMax:2});
-  const blocks=cfg.stores.map((st,i)=>`<div class="card" data-i="${i}">
-    <div class="tools"><label class="f">Store<input class="t" id="stn-${st.id}" data-f="name" value="${esc(st.name)}"></label>
-    <label class="f">Code<input class="t code" id="stc-${st.id}" data-f="code" value="${esc(st.code)}"></label>
-    <label class="f">Holiday crew<input class="t num" type="number" min="0" id="sthc-${st.id}" data-n="holCrew" value="${st.holCrew??""}" placeholder="all"></label>
-    <span style="margin-left:auto" class="delwrap"><button class="btn danger" data-del="1">Remove store</button></span></div>
-    <div class="tools">
-      <label class="f">Most on duty<input class="t num" type="number" min="1" id="stmx-${st.id}" data-n="maxOnDuty" value="${st.maxOnDuty??""}" placeholder="no cap"></label>
-      <label class="f">Extras go to<select class="t" id="stov-${st.id}" data-f="overflowTo">${storeOpts(st.overflowTo||"","Stay here")}</select></label>
-      <label class="f">Fewest on duty<input class="t num" type="number" min="0" id="stmn-${st.id}" data-n="minOnDuty" value="${st.minOnDuty??""}" placeholder="1"></label>
-      <label class="f">If short, borrow from<select class="t" id="stbk-${st.id}" data-f="backupFrom">${storeOpts(st.backupFrom||"","Nobody")}</select></label>
-    </div></div>`).join("");
-  $("#main").innerHTML=`<div class="card"><h3>Shift rules</h3><p class="hint">Every store, every day: 1 or 2 openers and at least 2 closers. A Straight shift counts as both. 1 on duty works S; 2 on duty work S + C; 3 work O + C + C; 4 or more work O + O and the rest close. When someone is under their Straight count for the week, the roster gives them S on a 3-or-more day.</p>
-    <div class="tools"><label class="f">Straight per week, at least<input class="t num" type="number" min="0" max="7" id="smin" value="${set.sMin??1}"></label>
-    <label class="f">Straight per week, at most<input class="t num" type="number" min="0" max="7" id="smax" value="${set.sMax??2}"></label></div></div>
-  ${blocks}<p class="hint"><b>Holiday crew</b> is how many of the store's own staff work a holiday; the rest get H. Regular and special holidays each rotate on their own, so the days off are shared out evenly. Leave it empty to have everyone work. Store codes can't be S, O, C, M, X, W or H.</p>
-  <div><button class="btn primary" id="addstore">Add store</button></div>`;
+function bindSetup(set){
   const m=$("#main");
-  m.addEventListener("change",e=>{const t=e.target;
-    if(t.id==="smin"||t.id==="smax"){set[t.id==="smin"?"sMin":"sMax"]=Number(t.value||0);saveCfg();return}
-    const c=t.closest(".card[data-i]");if(!c)return;const st=cfg.stores[c.dataset.i];
-    if(t.dataset.f){let v=t.value.trim();if(t.dataset.f==="name"||t.dataset.f==="code")v=v.toUpperCase();
-      if(t.dataset.f==="code"&&/^(S|O|C|M|X|W|H)$/.test(v)){t.value=st.code;return}
-      if(v===st.id){t.value="";v=""}
-      st[t.dataset.f]=v;if(t.tagName==="INPUT")t.value=v;}
-    if(t.dataset.n)st[t.dataset.n]=t.value===""?"":Number(t.value);
-    saveCfg();});
-  m.addEventListener("click",e=>{const c=e.target.closest(".card[data-i]");if(!c)return;const i=+c.dataset.i,st=cfg.stores[i];
-    if(e.target.dataset.del){const used=cfg.staff.filter(s=>s.home===st.id).length;
-      c.querySelector(".delwrap").innerHTML=used?`<span class="hint">Move its ${used} staff to another store first.</span>`:`<span class="inline-confirm">Remove ${esc(st.name)}? <button class="btn danger" data-yes="1">Remove</button><button class="btn" data-no="1">Keep</button></span>`}
-    if(e.target.dataset.yes){cfg.stores.splice(i,1);cfg.stores.forEach(s=>{if(s.overflowTo===st.id)s.overflowTo="";if(s.backupFrom===st.id)s.backupFrom=""});saveCfg();render()}
-    if(e.target.dataset.no)render();});
-  $("#addstore").onclick=()=>{cfg.stores.push({id:uid(),name:"NEW STORE",code:"N",holCrew:"",maxOnDuty:"",overflowTo:"",minOnDuty:"",backupFrom:""});saveCfg();render()};
-}
-function renderHolidays(){
-  const list=(cfg.holidays||[]).map((h,i)=>({...h,i})).sort((a,b)=>(a.date||"9").localeCompare(b.date||"9"));
-  const rows=list.map(h=>`<div class="row" data-i="${h.i}"><input class="t" type="date" id="hd-${h.i}" data-f="date" value="${esc(h.date)}">
-    <select class="t" id="ht-${h.i}" data-f="type"><option value="regular"${h.type!=="special"?" selected":""}>Regular</option><option value="special"${h.type==="special"?" selected":""}>Special non-working</option></select>
-    <input class="t" id="hn-${h.i}" data-f="name" value="${esc(h.name)}" style="flex:1;min-width:12ch"><button class="btn danger" data-del="1">Remove</button></div>`).join("");
-  $("#main").innerHTML=`<div class="card"><h3>Holidays</h3><p class="hint">From Proclamation No. 1006. Regular holidays (double pay) and special non-working days (+30%) rotate separately so both kinds are shared out evenly. Add Eid'l Adha once it's declared, plus any surprise or local holidays.</p>
-  <div class="rows" id="hrows">${rows||`<p class="hint">No holidays yet.</p>`}</div><div><button class="btn primary" id="addhol">Add holiday</button></div></div>`;
-  const b=$("#hrows");
-  b.addEventListener("change",e=>{const r=e.target.closest(".row");if(!r)return;cfg.holidays[r.dataset.i][e.target.dataset.f]=e.target.value.trim();saveCfg();});
-  b.addEventListener("click",e=>{if(!e.target.dataset.del)return;cfg.holidays.splice(e.target.closest(".row").dataset.i,1);saveCfg();render()});
-  $("#addhol").onclick=()=>{cfg.holidays.push({date:`${cur.y}-${pad(cur.m)}-01`,name:"New holiday",type:"regular"});saveCfg();render()};
-}
-function renderSettings(){
-  $("#main").innerHTML=`<div class="card"><h3>Connect your Google Sheet</h3>
-  <p class="hint">Your roster is saved in the <b>TFTG Roster Data</b> sheet in your Schedtftg folder, so your phone and laptop see the same thing. Do this once per sheet, then enter the link and PIN on each device you use.</p>
-  <ol class="steps"><li>Open the <b>TFTG Roster Data</b> sheet in Google Drive.</li>
-  <li>Go to <b>Extensions › Apps Script</b>, delete what's there, and paste the code from <a href="apps-script/Code.gs" target="_blank" rel="noopener">Code.gs</a>.</li>
-  <li>On line 1, change <code>CHANGE-ME</code> to a PIN only you know. Save.</li>
-  <li>Click <b>Deploy › New deployment</b>, pick <b>Web app</b>, set <b>Execute as: Me</b> and <b>Who has access: Anyone</b>, then <b>Deploy</b> and allow access.</li>
-  <li>Copy the <b>Web app URL</b> and paste it below with your PIN.</li></ol>
-  <form id="cf" class="tools" style="align-items:end">
-    <label class="f" style="flex:1;min-width:220px">Web app URL<input class="t wide" id="curl" value="${esc(conn.url)}" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
-    <label class="f">PIN<input class="t" id="cpin" type="password" value="${esc(conn.pin)}" autocomplete="off" style="width:12ch"></label>
-    <button class="btn primary" type="submit">Connect</button></form>
-  <p class="hint" id="cmsg">${loadErr?esc(loadErr):(cfgLoaded?"Connected.":"")}</p></div>`;
+  m.addEventListener("toggle",e=>{const d=e.target;if(d.matches&&d.matches("details.sec")){if(d.open)openSec=d.dataset.sec;else if(openSec===d.dataset.sec)openSec=""}},true);
   $("#cf").addEventListener("submit",e=>{e.preventDefault();conn={url:$("#curl").value.trim(),pin:$("#cpin").value.trim()};
     try{localStorage.setItem(LS,JSON.stringify(conn))}catch(err){}
     $("#cmsg").textContent="Connecting…";cfgLoaded=false;loadAll(true);});
+  if(!cfgLoaded)return;
+  m.addEventListener("change",e=>{const t=e.target;
+    if(t.id==="smin"||t.id==="smax"){set[t.id==="smin"?"sMin":"sMax"]=Number(t.value||0);saveCfg();return}
+    const box=t.closest("[data-kind]"); if(!box)return; const kind=box.dataset.kind, i=+box.dataset.i;
+    if(kind==="staff"){const s=cfg.staff[i];s[t.dataset.f]=t.dataset.f==="name"?t.value.trim().toUpperCase():t.value;if(t.dataset.f==="name")t.value=s.name;saveCfg();}
+    if(kind==="hol"){cfg.holidays[i][t.dataset.f]=t.value.trim();saveCfg();}
+    if(kind==="store"){const st=cfg.stores[i];
+      if(t.dataset.f){let v=t.value.trim();if(t.dataset.f==="name"||t.dataset.f==="code")v=v.toUpperCase();
+        if(t.dataset.f==="code"&&/^(S|O|C|M|X|W|H|VL|SL)$/.test(v)){t.value=st.code;return}
+        if(v===st.id)v="";st[t.dataset.f]=v;if(t.tagName==="INPUT")t.value=v;}
+      if(t.dataset.n)st[t.dataset.n]=t.value===""?"":Number(t.value);
+      if(t.dataset.mid)st.mid.start=t.value;
+      if(t.dataset.mw!=null)st.mid.weeks[+t.dataset.mw][t.dataset.sid]=Number(t.value||0);
+      saveCfg();}
+  });
+  m.addEventListener("click",e=>{const t=e.target, box=t.closest("[data-kind]");
+    if(t.dataset.wk&&box){const s=cfg.staff[+box.dataset.i];s.weekly=s.weekly||[];s.weekly=s.weekly.includes(t.dataset.wk)?s.weekly.filter(x=>x!==t.dataset.wk):[...s.weekly,t.dataset.wk];t.setAttribute("aria-pressed",s.weekly.includes(t.dataset.wk));saveCfg();return}
+    if(t.dataset.del&&box){const kind=box.dataset.kind,i=+box.dataset.i;
+      if(kind==="hol"){cfg.holidays.splice(i,1);saveCfg();render();return}
+      if(kind==="store"&&cfg.staff.some(s=>s.home===cfg.stores[i].id)){box.querySelector(".delwrap").innerHTML=`<span class="hint">Move this store's staff to another store first.</span>`;return}
+      const nm=kind==="staff"?cfg.staff[i].name:cfg.stores[i].name;
+      box.querySelector(".delwrap").innerHTML=`<span class="inline-confirm">Remove ${esc(nm)}? <button class="btn danger" data-yes="1">Yes, remove</button><button class="btn" data-no="1">No</button></span>`;return}
+    if(t.dataset.yes&&box){const i=+box.dataset.i;if(box.dataset.kind==="staff")cfg.staff.splice(i,1);else{const id=cfg.stores[i].id;cfg.stores.splice(i,1);cfg.stores.forEach(s=>{if(s.overflowTo===id)s.overflowTo="";if(s.backupFrom===id)s.backupFrom=""})}saveCfg();render();return}
+    if(t.dataset.no){render();return}
+    if(box&&box.dataset.kind==="store"){const st=cfg.stores[+box.dataset.i];
+      if(t.dataset.midon){const mon=new Date();mon.setDate(mon.getDate()-((mon.getDay()+6)%7));st.mid={start:`${mon.getFullYear()}-${pad(mon.getMonth()+1)}-${pad(mon.getDate())}`,weeks:[{}]};saveCfg();render();return}
+      if(t.dataset.midadd){st.mid.weeks.push({});saveCfg();render();return}
+      if(t.dataset.midrm){st.mid.weeks.pop();saveCfg();render();return}
+      if(t.dataset.midoff){delete st.mid;saveCfg();render();return}}
+  });
+  const add=(id,fn)=>{const b=document.getElementById(id);if(b)b.onclick=fn};
+  add("addstaff",()=>{if(!cfg.stores.length)return;const s={id:uid(),name:"NEW PERSON",home:cfg.stores[0].id,weekly:[]};cfg.staff.push(s);saveCfg();render();const el=document.getElementById("sn-"+s.id);if(el){el.focus();el.select()}});
+  add("addstore",()=>{cfg.stores.push({id:uid(),name:"NEW STORE",code:"N",maxOpen:2,closers:2,holCrew:"",maxOnDuty:"",overflowTo:"",minOnDuty:"",backupFrom:""});saveCfg();render()});
+  add("addhol",()=>{cfg.holidays.push({date:`${cur.y}-${pad(cur.m)}-01`,name:"New holiday",type:"regular"});saveCfg();render()});
 }
+
 function render(){
   $("#mlabel").textContent=`${MONTHS[cur.m-1]} ${cur.y}`;
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===tab));
   const old=$("#main"), fresh=old.cloneNode(false); old.replaceWith(fresh);
-  if(tab==="settings")return renderSettings();
-  if(!conn.url){fresh.innerHTML=`<div class="empty"><b>Connect your Google Sheet first</b>Open the Settings tab to link the roster to your sheet.</div>`;return}
-  if(!cfgLoaded){fresh.innerHTML=loadErr?`<div class="empty"><b>Couldn't load your roster</b>${esc(loadErr)} Check the link and PIN on the Settings tab.</div>`:`<div class="empty"><b>Loading your roster</b>Getting your stores, staff and day offs from Google Sheets.</div>`;return}
-  if(!cfg.stores.length&&tab!=="stores"){fresh.innerHTML=`<div class="empty"><b>No stores yet</b>Add your stores on the Stores tab, then your staff.</div>`;return}
-  ({schedule:renderSchedule,dayoffs:renderDayoffs,staff:renderStaff,stores:renderStores,holidays:renderHolidays})[tab]();
+  if(tab==="setup")return renderSetup();
+  if(!conn.url){fresh.innerHTML=`<div class="empty"><b>First, connect your Google Sheet</b>Tap <b>Setup</b> above, then open "Google Sheet connection".</div>`;return}
+  if(!cfgLoaded){fresh.innerHTML=loadErr?`<div class="empty"><b>Couldn't open your roster</b>${esc(loadErr)} Check the link and PIN in Setup.</div>`:`<div class="empty"><b>Loading your roster</b>Getting your stores, staff and day offs from Google Sheets.</div>`;return}
+  if(!cfg.stores.length){fresh.innerHTML=`<div class="empty"><b>No stores yet</b>Add your stores and staff in Setup.</div>`;return}
+  (tab==="schedule"?renderSchedule:renderDayoffs)();
 }
 
 // ======================= Google Sheet storage =======================
@@ -459,14 +559,14 @@ async function loadAll(first){
     const c=j.config||{};
     if(!pendingCfg)cfg={stores:c.stores||[],staff:c.staff||[],holidays:c.holidays||[],settings:c.settings||{sMin:1,sMax:2}};
     if(pendingMonth!==k)entries=(j.month&&j.month.entries)||{};
-    cfgLoaded=true;loadErr="";setStatus("Saved");
-    if(first&&tab==="settings")tab="schedule";
-  }catch(e){if(seq!==loadSeq)return;loadErr=String(e.message||e)==="Failed to fetch"?"The sheet couldn't be reached.":String(e.message||e);setStatus("Not connected",true)}
+    cfgLoaded=true;loadErr="";setStatus("Saved ✓");
+    if(first&&tab==="setup"&&openSec==="connect")tab="dayoffs";
+  }catch(e){if(seq!==loadSeq)return;loadErr=/fetch/i.test(String(e.message||e))?"The sheet couldn't be reached.":String(e.message||e);setStatus("Not connected",true)}
   render();
 }
 function saveCfg(){
   pendingCfg=true;setStatus("Saving…");clearTimeout(cfgTimer);
-  cfgTimer=setTimeout(async()=>{try{await api({action:"saveConfig",config:cfg});pendingCfg=false;setStatus("Saved");saveMonth(true)}catch(e){pendingCfg=false;setStatus("Couldn't save",true)}},900);
+  cfgTimer=setTimeout(async()=>{try{await api({action:"saveConfig",config:cfg});pendingCfg=false;setStatus("Saved ✓");saveMonth(true)}catch(e){pendingCfg=false;setStatus("Not saved!",true)}},900);
 }
 function saveMonth(quiet){
   const k=mkey(cur.y,cur.m);
@@ -476,19 +576,19 @@ function saveMonth(quiet){
 async function flushMonth(k){
   const snap=JSON.parse(JSON.stringify(entries));
   let table=null; try{table=scheduleTable(compute())}catch(e){}
-  try{await api({action:"saveMonth",month:k,entries:snap,table});if(pendingMonth===k)pendingMonth=null;setStatus("Saved")}
-  catch(e){pendingMonth=null;setStatus("Couldn't save",true)}
+  try{await api({action:"saveMonth",month:k,entries:snap,table});if(pendingMonth===k)pendingMonth=null;setStatus("Saved ✓")}
+  catch(e){pendingMonth=null;setStatus("Not saved!",true)}
 }
 function step(dir){
   if(pendingMonth){clearTimeout(monthTimer);flushMonth(pendingMonth)}
   let m=cur.m+dir,y=cur.y;if(m<1){m=12;y--}if(m>12){m=1;y++}cur={y,m};entries={};
-  if(cfgLoaded){cfgLoaded=true;render()}
-  loadAll();
+  render();loadAll();
 }
 $("#prev").onclick=()=>step(-1);$("#next").onclick=()=>step(1);
 $("#tabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;tab=b.dataset.tab;history.replaceState(null,"","#"+tab);render()};
 window.addEventListener("focus",()=>{if(cfgLoaded&&!pendingCfg&&!pendingMonth&&!document.activeElement.closest?.("main"))loadAll()});
-if(!conn.url)tab="settings";
+window.addEventListener("resize",setHdr);
+if(!conn.url){tab="setup";openSec="connect"}
 render();loadAll(true);
 })();
 </script>
