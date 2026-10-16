@@ -122,7 +122,9 @@ input.t.num{width:7ch;font-family:var(--f-mono)}
 input.t.code{width:7ch;font-family:var(--f-mono);text-transform:uppercase}
 .days{display:flex;gap:4px;flex-wrap:wrap}
 .days button{border:2px solid var(--line);background:var(--bg);color:var(--muted);font:700 .78rem var(--f-body);width:40px;height:40px;border-radius:9px;cursor:pointer}
-.days button[aria-pressed="true"]{background:var(--x);color:var(--ink);border-color:var(--ink)}
+.days button.uw{width:58px;height:52px;display:grid;place-content:center;gap:1px;line-height:1.1}
+.days button.uw small{font-size:.68rem;font-weight:600}
+.days button.uw[class*="k-"]{border-color:transparent}
 .subcard{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:12px}
 .subcard h4{margin:0;font-family:var(--f-display);font-weight:800;letter-spacing:.04em}
 .midtable{border-collapse:collapse}
@@ -182,6 +184,8 @@ const dnum=iso=>{const [y,m,d]=iso.split("-").map(Number);return Date.UTC(y,m-1,
 const h0=location.hash.slice(1); if(["schedule","dayoffs","setup"].includes(h0))tab=h0;
 function setStatus(t,bad){const s=$("#status");s.textContent=t;s.classList.toggle("bad",!!bad)}
 const num=(v,d)=>v===""||v==null||isNaN(Number(v))?d:Number(v);
+const USUAL=["","X","O","C","S","M"], USUALW={"":"Any",X:"Off",O:"Open",C:"Close",S:"Straight",M:"Mid"};
+function usualDay(s,d){const w=s.week||{};if(w[d]!=null&&w[d]!=="")return w[d];return (s.weekly||[]).includes(d)?"X":""}
 
 // ======================= scheduling rules =======================
 // Per store: openers (1 up to "most openers"), at least "closers" closers. Straight counts as opener and closer.
@@ -206,13 +210,15 @@ function compute(){
     days.push({d,dow,iso,hol,sun});
     const rot=i=>(i+d)%N_;
     const P=staff.map(s=>{
-      let raw=String((entries[s.id]||{})[d]||"").trim().toUpperCase(), weekly=false;
-      if(!raw&&(s.weekly||[]).includes(DOW[dow])){raw="X";weekly=true}
+      let raw=String((entries[s.id]||{})[d]||"").trim().toUpperCase(), weekly=false, fixed="";
+      const usual=usualDay(s,DOW[dow]);
+      if(!raw&&usual==="X"){raw="X";weekly=true}
+      else if(!raw&&usual)fixed=usual;
       if(raw==="W")raw="";
-      const p={raw,base:null,forced:null,off:null,weekly};
+      const p={raw,base:null,forced:null,off:null,weekly,fixed:!!fixed};
       let mm;
       if(!sById[s.home])p.off="?";
-      else if(!raw)p.base=s.home;
+      else if(!raw){p.base=s.home;if(fixed)p.forced=fixed}
       else if(raw.length===1&&LETTERS.includes(raw)){p.base=s.home;p.forced=raw}
       else if((mm=raw.match(/^([SOCM])-([A-Z0-9]+)$/))&&byCode[mm[2]]){p.base=byCode[mm[2]];p.forced=mm[1]}
       else if(byCode[raw])p.base=byCode[raw];
@@ -220,6 +226,7 @@ function compute(){
       return p;
     });
     const auto=i=>P[i].raw===""&&P[i].base===staff[i].home;
+    const movable=i=>auto(i)&&!P[i].fixed;
     // holidays: regular and special rotate separately
     if(hol){
       const type=hol.type==="special"?"special":"regular";
@@ -231,7 +238,7 @@ function compute(){
         const n=el.length; if(!n)return;
         const start=(ord*k)%n, keep=new Set();
         for(let j=0;j<Math.min(k,n);j++)keep.add(el[(start+j)%n]);
-        el.forEach(i=>{if(!keep.has(i)){P[i].base=null;P[i].off="H"}});
+        el.forEach(i=>{if(!keep.has(i)){P[i].base=null;P[i].forced=null;P[i].off="H"}});
       });
     }
     // extras go to another store
@@ -239,14 +246,14 @@ function compute(){
       if(!st.overflowTo||!sById[st.overflowTo]||st.maxOnDuty===""||st.maxOnDuty==null)return;
       const here=P.map((p,i)=>i).filter(i=>P[i].base===st.id);
       const extra=here.length-Number(st.maxOnDuty); if(extra<=0)return;
-      here.filter(auto).sort((a,b)=>cnt[a].ov-cnt[b].ov||rot(a)-rot(b)).slice(0,extra).forEach(i=>{P[i].base=st.overflowTo;cnt[i].ov++});
+      here.filter(movable).sort((a,b)=>cnt[a].ov-cnt[b].ov||rot(a)-rot(b)).slice(0,extra).forEach(i=>{P[i].base=st.overflowTo;cnt[i].ov++});
     });
     // short store borrows from another store
     stores.forEach(st=>{
       if(!st.backupFrom||!sById[st.backupFrom])return;
       let short=num(st.minOnDuty,1)-P.filter(p=>p.base===st.id).length; if(short<=0)return;
       const src=sById[st.backupFrom], srcMin=num(src.minOnDuty,1);
-      const pool=staff.map((s,i)=>i).filter(i=>staff[i].home===src.id&&auto(i)).sort((a,b)=>cnt[a].bk-cnt[b].bk||rot(a)-rot(b));
+      const pool=staff.map((s,i)=>i).filter(i=>staff[i].home===src.id&&movable(i)).sort((a,b)=>cnt[a].bk-cnt[b].bk||rot(a)-rot(b));
       for(const i of pool){if(short<=0)break;if(P.filter(p=>p.base===src.id).length-1<srcMin)break;P[i].base=st.id;cnt[i].bk++;short--;}
     });
     // shifts
@@ -353,11 +360,11 @@ function renderDayoffs(){
     <div class="brow">${brushBtn("X","Day off","X")}${brushBtn("VL","Vacation leave","X")}${brushBtn("SL","Sick leave","X")}<button type="button" class="brush erase" data-b="" aria-pressed="${brush===""}">Eraser</button></div>
     <details class="more"${/^[A-Z]{1,3}$/.test(brush)&&!["X","VL","SL"].includes(brush)||brush.includes("-")||brush==="W"?" open":""}><summary>More buttons</summary>
       <div class="brow">${cfg.stores.map(s=>brushBtn(String(s.code).toUpperCase(),"Work at "+s.name,"V")).join("")}</div>
-      <div class="brow" style="margin-top:8px">${["O","C","S","M"].map(L=>brushBtn(L,"Must be "+WORD[L],L)).join("")}${brushBtn("W","Must work (skip weekly off)","S")}</div>
+      <div class="brow" style="margin-top:8px">${["O","C","S","M"].map(L=>brushBtn(L,"Must be "+WORD[L],L)).join("")}${brushBtn("W","Ignore usual week","S")}</div>
     </details>
   </div>
   <div class="store"><div class="scroll"><table class="grid">${headRows(days,extra)}<tbody>${body}</tbody></table></div></div>
-  <p class="hint">Striped boxes are already off: grey stripes are weekly days off (set in Setup), pink stripes are holiday days off. Staff send their requests in the last week of the month, so press <b>›</b> to go to ${nextM} first.</p>
+  <p class="hint">Striped boxes are already off: grey stripes are usual days off (set in Setup › Staff), pink stripes are holiday days off. Staff send their requests in the last week of the month, so press <b>›</b> to go to ${nextM} first.</p>
   <div class="tools"><span id="clearwrap"><button class="btn danger" id="clear">Clear all of ${MONTHS[cur.m-1]}</button></span></div>`;
   setHdr();
   $("#brushes").addEventListener("click",e=>{const b=e.target.closest(".brush");if(!b)return;brush=b.dataset.b;document.querySelectorAll(".brush").forEach(x=>x.setAttribute("aria-pressed",x===b))});
@@ -440,7 +447,7 @@ function renderSetup(){
     const staffRows=cfg.staff.map((s,i)=>`<div class="row" data-kind="staff" data-i="${i}">
       <label class="f">Name<input class="t" id="sn-${s.id}" data-f="name" value="${esc(s.name)}"></label>
       <label class="f">Store<select class="t" id="sh-${s.id}" data-f="home">${storeOpts(s.home)}</select></label>
-      <div class="f">Off every week on<div class="days">${DOW.map(d=>`<button type="button" data-wk="${d}" aria-pressed="${(s.weekly||[]).includes(d)}">${d.slice(0,2)}</button>`).join("")}</div></div>
+      <div class="f">Usual week (tap a day to change it)<div class="days">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>{const v=usualDay(s,d);return `<button type="button" class="uw${v?" k-"+v:""}" data-wk="${d}" aria-label="${d}: ${USUALW[v]}">${d.slice(0,2)}<small>${USUALW[v]}</small></button>`}).join("")}</div></div>
       <span style="margin-left:auto" class="delwrap"><button class="btn danger" data-del="staff">Remove</button></span></div>`).join("");
     html+=sec("staff","Staff",`${cfg.staff.length} people`,`<div class="rows">${staffRows}</div><div><button class="btn primary" id="addstaff">Add a person</button></div>`);
     // stores
@@ -513,7 +520,10 @@ function bindSetup(set){
       saveCfg();}
   });
   m.addEventListener("click",e=>{const t=e.target, box=t.closest("[data-kind]");
-    if(t.dataset.wk&&box){const s=cfg.staff[+box.dataset.i];s.weekly=s.weekly||[];s.weekly=s.weekly.includes(t.dataset.wk)?s.weekly.filter(x=>x!==t.dataset.wk):[...s.weekly,t.dataset.wk];t.setAttribute("aria-pressed",s.weekly.includes(t.dataset.wk));saveCfg();return}
+    const wb=e.target.closest("button[data-wk]");
+    if(wb&&box){const s=cfg.staff[+box.dataset.i],d=wb.dataset.wk;s.week=s.week||{};(s.weekly||[]).forEach(x=>{if(s.week[x]==null)s.week[x]="X"});s.weekly=[];
+      const v=USUAL[(USUAL.indexOf(usualDay(s,d))+1)%USUAL.length];s.week[d]=v;
+      wb.className="uw"+(v?" k-"+v:"");wb.querySelector("small").textContent=USUALW[v];wb.setAttribute("aria-label",d+": "+USUALW[v]);saveCfg();return}
     if(t.dataset.del&&box){const kind=box.dataset.kind,i=+box.dataset.i;
       if(kind==="hol"){cfg.holidays.splice(i,1);saveCfg();render();return}
       if(kind==="store"&&cfg.staff.some(s=>s.home===cfg.stores[i].id)){box.querySelector(".delwrap").innerHTML=`<span class="hint">Move this store's staff to another store first.</span>`;return}
@@ -528,7 +538,7 @@ function bindSetup(set){
       if(t.dataset.midoff){delete st.mid;saveCfg();render();return}}
   });
   const add=(id,fn)=>{const b=document.getElementById(id);if(b)b.onclick=fn};
-  add("addstaff",()=>{if(!cfg.stores.length)return;const s={id:uid(),name:"NEW PERSON",home:cfg.stores[0].id,weekly:[]};cfg.staff.push(s);saveCfg();render();const el=document.getElementById("sn-"+s.id);if(el){el.focus();el.select()}});
+  add("addstaff",()=>{if(!cfg.stores.length)return;const s={id:uid(),name:"NEW PERSON",home:cfg.stores[0].id,week:{}};cfg.staff.push(s);saveCfg();render();const el=document.getElementById("sn-"+s.id);if(el){el.focus();el.select()}});
   add("addstore",()=>{cfg.stores.push({id:uid(),name:"NEW STORE",code:"N",maxOpen:2,closers:2,holCrew:"",maxOnDuty:"",overflowTo:"",minOnDuty:"",backupFrom:""});saveCfg();render()});
   add("addhol",()=>{cfg.holidays.push({date:`${cur.y}-${pad(cur.m)}-01`,name:"New holiday",type:"regular"});saveCfg();render()});
 }
