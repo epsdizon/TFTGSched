@@ -8,5 +8,6 @@ Open the site, type each person's requested day offs, and it builds the schedule
 - Straight is spread out so each person gets at least 1 and at most 2 a week where the store size allows.
 - Ascomo's extra staff close at Florida; if Ascomo has nobody, Jun or Jonas covers from Resettle.
 - Regular and special holidays rotate separately so holiday days off are shared evenly.
+- "Absent today" marks a sudden absence: only that day is re-planned, and the Schedule page lists who must change shift.
 
-Data is saved in the "TFTG Roster Data" Google Sheet, not in this repo. See the Settings tab on the site for the one-time setup, and `apps-script/Code.gs` for the script that goes in the sheet.
+No key or PIN is needed. Data saves in the browser on each device. Optionally, link the "TFTG Roster Data" Google Sheet (Setup › Google Sheet backup) to keep a copy there; `apps-script/Code.gs` is the script that goes in the sheet.

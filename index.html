@@ -59,6 +59,8 @@ main{padding-block:18px 60px;display:grid;gap:18px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .k-S{background:var(--s);color:var(--s-ink)} .k-O{background:var(--o);color:var(--o-ink)} .k-C{background:var(--c);color:var(--c-ink)} .k-M{background:var(--m);color:var(--m-ink)}
 .k-X,.k-L{background:var(--x);color:var(--x-ink)} .k-H{background:var(--h);color:var(--h-ink)} .k-V{background:var(--mv);color:var(--mv-ink)}
+.k-A{background:#c62f2f;color:#fff} .chg{box-shadow:0 0 0 2px var(--ink) inset}
+.changes{background:var(--panel);border:2px solid #c62f2f;border-radius:14px;padding:12px 16px;margin:0 0 16px} .changes h3{margin:0 0 6px} .changes li{margin:4px 0}
 /* brushes */
 .brushes{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:10px;position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--hdr,150px));z-index:4}
 .brushes .lab{font-weight:700}
@@ -168,7 +170,11 @@ code{font-family:var(--f-mono);font-size:.85em;background:var(--soft);padding:1p
 const DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
 const LETTERS="SOCM";
-const WORD={S:"Straight",O:"Opening",C:"Closing",M:"Mid shift",X:"Day off",H:"Holiday off",VL:"Vacation leave",SL:"Sick leave"};
+const WORD={S:"Straight",O:"Opening",C:"Closing",M:"Mid shift",X:"Day off",H:"Holiday off",VL:"Vacation leave",SL:"Sick leave",AB:"Absent"};
+const DEFAULT_CFG={"stores":[{"id":"asc","name":"ASCOMO","code":"A","holCrew":2,"maxOnDuty":2,"overflowTo":"flo","minOnDuty":1,"backupFrom":"res","maxOpen":1,"closers":1},{"id":"flo","name":"FLORIDA","code":"F","holCrew":2,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":2,"closers":2},{"id":"por","name":"PORAC","code":"P","holCrew":2,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":2,"closers":2},{"id":"res","name":"RESETTLE","code":"R","holCrew":1,"maxOnDuty":"","overflowTo":"","minOnDuty":1,"backupFrom":"","maxOpen":1,"closers":1},{"id":"cal","name":"CALOOCAN","code":"CAL","holCrew":2,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":1,"closers":1,"mid":{"start":"2026-11-02","weeks":[{"lala":2,"lee":1,"jr":1},{"lala":1,"lee":2,"jr":1},{"lala":1,"lee":1,"jr":2}]}}],"staff":[{"id":"jerald","name":"JERALD","home":"asc","week":{}},{"id":"arjay","name":"ARJAY","home":"asc","week":{}},{"id":"carmi","name":"CARMI","home":"flo","week":{}},{"id":"kate","name":"KATE","home":"flo","week":{}},{"id":"bryan","name":"BRYAN","home":"asc","week":{}},{"id":"sarah","name":"SARAH","home":"por","week":{}},{"id":"marnella","name":"MARNELLA","home":"por","week":{}},{"id":"jomel","name":"JOMEL","home":"por","week":{"Mon":"","Tue":"C","Wed":"O","Thu":"C","Fri":"C","Sat":"O","Sun":"X"}},{"id":"jenny","name":"JENNY","home":"por","week":{},"trainee":true},{"id":"jun","name":"JUN","home":"res","week":{}},{"id":"jonas","name":"JONAS","home":"res","week":{}},{"id":"lala","name":"LALA","home":"cal","week":{}},{"id":"lee","name":"LEE","home":"cal","week":{}},{"id":"jr","name":"JR","home":"cal","week":{}}],"holidays":[{"date":"2026-01-01","name":"New Year's Day","type":"regular"},{"date":"2026-02-17","name":"Chinese New Year","type":"special"},{"date":"2026-03-20","name":"Eid'l Fitr","type":"regular"},{"date":"2026-04-02","name":"Maundy Thursday","type":"regular"},{"date":"2026-04-03","name":"Good Friday","type":"regular"},{"date":"2026-04-04","name":"Black Saturday","type":"special"},{"date":"2026-04-09","name":"Araw ng Kagitingan","type":"regular"},{"date":"2026-05-01","name":"Labor Day","type":"regular"},{"date":"2026-06-12","name":"Independence Day","type":"regular"},{"date":"2026-08-21","name":"Ninoy Aquino Day","type":"special"},{"date":"2026-08-31","name":"National Heroes Day","type":"regular"},{"date":"2026-11-01","name":"All Saints' Day","type":"special"},{"date":"2026-11-02","name":"All Souls' Day","type":"special"},{"date":"2026-11-30","name":"Bonifacio Day","type":"regular"},{"date":"2026-12-08","name":"Immaculate Conception","type":"special"},{"date":"2026-12-24","name":"Christmas Eve","type":"special"},{"date":"2026-12-25","name":"Christmas Day","type":"regular"},{"date":"2026-12-30","name":"Rizal Day","type":"regular"},{"date":"2026-12-31","name":"Last Day of the Year","type":"special"}],"settings":{"sMin":1,"sMax":2}};
+const LSC="tftg-roster-config", LSM="tftg-roster-month:";
+const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const LS="tftg-roster-settings";
 let conn={url:"",pin:""};
 try{conn=Object.assign(conn,JSON.parse(localStorage.getItem(LS)||"{}"))}catch(e){}
@@ -192,7 +198,7 @@ function usualDay(s,d){const w=s.week||{};if(w[d]!=null&&w[d]!=="")return w[d];r
 // Per store: openers (1 up to "most openers"), at least "closers" closers. Straight counts as opener and closer.
 // Straight per person per Mon–Sun week: aim for sMin, avoid going over sMax.
 // Mid-shift plan (Caloocan): each week of the cycle says how many mids each person gets.
-function compute(){
+function calc(noAbs){
   const {y,m}=cur, N=new Date(y,m,0).getDate();
   const stores=cfg.stores, staff=cfg.staff, set=cfg.settings||{};
   const sMin=num(set.sMin,1);
@@ -212,6 +218,7 @@ function compute(){
     const rot=i=>(i+d)%N_;
     const P=staff.map(s=>{
       let raw=String((entries[s.id]||{})[d]||"").trim().toUpperCase(), weekly=false, fixed="";
+      if(raw==="AB"&&noAbs)raw="";
       const usual=usualDay(s,DOW[dow]);
       if(!raw&&usual==="X"){raw="X";weekly=true}
       else if(!raw&&usual)fixed=usual;
@@ -221,6 +228,7 @@ function compute(){
       if(!sById[s.home])p.off="?";
       else if(!raw){p.base=s.home;if(fixed)p.forced=fixed}
       else if(raw.length===1&&LETTERS.includes(raw)){p.base=s.home;p.forced=raw}
+      else if(raw==="AB")p.off="AB";
       else if((mm=raw.match(/^([SOCM])-([A-Z0-9]+)$/))&&byCode[mm[2]]){p.base=byCode[mm[2]];p.forced=mm[1]}
       else if(byCode[raw])p.base=byCode[raw];
       else p.off=raw;
@@ -320,10 +328,32 @@ function compute(){
       if(p.base){const L=shift[i];cnt[i][L]++;if(L==="S")cnt[i].wk[week]=(cnt[i].wk[week]||0)+1;
         if(hol){hol.type==="special"?cnt[i].spec++:cnt[i].reg++}
         grid[i].push({k:L,store:p.base,disp:L+(p.base!==s.home?"-"+(sById[p.base].code||"?"):"")});}
-      else{cnt[i].off++;grid[i].push({k:p.off==="H"?"H":p.off==="X"?"X":"L",store:null,disp:p.off,weekly:p.weekly})}
+      else{cnt[i].off++;grid[i].push({k:p.off==="H"?"H":p.off==="X"?"X":p.off==="AB"?"A":"L",store:null,disp:p.off,weekly:p.weekly})}
     });
   }
   return {N,days,grid,cnt,storeDay,sById};
+}
+// Absent: only the absent day is re-planned; every other day stays exactly as before.
+function compute(){
+  const absDays=new Set();
+  Object.values(entries).forEach(e=>Object.entries(e).forEach(([d,v])=>{if(v==="AB")absDays.add(+d)}));
+  const A=calc(false); A.changes=[];
+  if(!absDays.size)return A;
+  const B=calc(true), staff=cfg.staff, changes=[];
+  const grid=B.grid.map((row,i)=>row.map((c,j)=>{
+    if(!absDays.has(j+1))return c;
+    const a=A.grid[i][j];
+    return a.k!=="A"&&a.disp!==c.disp?{...a,chg:true,was:c.disp,wasCell:c}:a;}));
+  const say=(c,s)=>(WORD[c.k]||c.disp)+(c.store&&c.store!==s.home?" at "+(A.sById[c.store]?.name||""):"");
+  [...absDays].sort((a,b)=>a-b).forEach(d=>{
+    const j=d-1, gone=[], moved=[];
+    staff.forEach((s,i)=>{const c=grid[i][j];if(!c)return;if(c.k==="A")gone.push(s.name);else if(c.chg)moved.push(`${s.name}: ${say(c.wasCell,s)} → ${say(c,s)}`)});
+    if(gone.length)changes.push({d,dow:A.days[j].dow,gone,moved});
+  });
+  const storeDay=Object.fromEntries(Object.keys(B.storeDay).map(k=>[k,B.storeDay[k].map((x,j)=>absDays.has(j+1)?A.storeDay[k][j]:x)]));
+  const cnt=grid.map(row=>{const c={S:0,O:0,C:0,M:0,off:0,reg:0,spec:0};
+    row.forEach((x,j)=>{if(x.store){c[x.k]++;const h=B.days[j].hol;if(h){h.type==="special"?c.spec++:c.reg++}}else c.off++});return c});
+  return {...B,grid,storeDay,cnt,changes};
 }
 
 // ======================= helpers =======================
@@ -366,14 +396,14 @@ function renderDayoffs(){
   $("#main").innerHTML=`
   <p class="say"><b>Pick a button, then tap the boxes.</b> Tap a box again to remove it. The schedule fills in by itself.</p>
   <div class="brushes" id="brushes">
-    <div class="brow">${brushBtn("X","Day off","X")}${brushBtn("VL","Vacation leave","X")}${brushBtn("SL","Sick leave","X")}<button type="button" class="brush erase" data-b="" aria-pressed="${brush===""}">Eraser</button></div>
-    <details class="more"${/^[A-Z]{1,3}$/.test(brush)&&!["X","VL","SL"].includes(brush)||brush.includes("-")||brush==="W"?" open":""}><summary>More buttons</summary>
+    <div class="brow">${brushBtn("X","Day off","X")}${brushBtn("VL","Vacation leave","X")}${brushBtn("SL","Sick leave","X")}${brushBtn("AB","Absent today","A")}<button type="button" class="brush erase" data-b="" aria-pressed="${brush===""}">Eraser</button></div>
+    <details class="more"${/^[A-Z]{1,3}$/.test(brush)&&!["X","VL","SL","AB"].includes(brush)||brush.includes("-")||brush==="W"?" open":""}><summary>More buttons</summary>
       <div class="brow">${cfg.stores.map(s=>brushBtn(String(s.code).toUpperCase(),"Work at "+s.name,"V")).join("")}</div>
       <div class="brow" style="margin-top:8px">${["O","C","S","M"].map(L=>brushBtn(L,"Must be "+WORD[L],L)).join("")}${brushBtn("W","Ignore usual week","S")}</div>
     </details>
   </div>
   <div class="store"><div class="scroll"><table class="grid">${headRows(days,extra)}<tbody>${body}</tbody></table></div></div>
-  <p class="hint">Striped boxes are already off: grey stripes are usual days off (set in Setup › Staff), pink stripes are holiday days off. Staff send their requests in the last week of the month, so press <b>›</b> to go to ${nextM} first.</p>
+  <p class="hint">Striped boxes are already off: grey stripes are usual days off (set in Setup › Staff), pink stripes are holiday days off. <b>Absent today</b> is for someone who suddenly can't come: only that day is re-planned, and the boxes with a dark border show who was moved to cover. Staff send their requests in the last week of the month, so press <b>›</b> to go to ${nextM} first.</p>
   <div class="tools"><span id="clearwrap"><button class="btn danger" id="clear">Clear all of ${MONTHS[cur.m-1]}</button></span></div>`;
   setHdr();
   $("#brushes").addEventListener("click",e=>{const b=e.target.closest(".brush");if(!b)return;brush=b.dataset.b;document.querySelectorAll(".brush").forEach(x=>x.setAttribute("aria-pressed",x===b))});
@@ -390,9 +420,10 @@ function renderDayoffs(){
 }
 function cellBtn(s,d,v,c){
   let k="",txt=v,extra="";
-  if(v){k="has k-"+(v==="X"||v==="VL"||v==="SL"?"X":LETTERS.includes(v[0])&&(v.length===1||v[1]==="-")?v[0]:v==="W"?"S":"V")}
+  if(v){k="has k-"+(v==="AB"?"A":v==="X"||v==="VL"||v==="SL"?"X":LETTERS.includes(v[0])&&(v.length===1||v[1]==="-")?v[0]:v==="W"?"S":"V")}
   else if(c&&c.weekly){extra=" wk";txt="X"}
   else if(c&&c.k==="H"){extra=" hd";txt="H"}
+  else if(c&&c.chg){extra=" chg";txt=c.k}
   return `<button type="button" class="dc ${k}${extra}" data-s="${s.id}" data-d="${d}" aria-label="${esc(s.name)} day ${d}${v?": "+esc(WORD[v]||v):""}">${esc(txt)}</button>`;
 }
 function refreshDayoffs(){
@@ -426,16 +457,17 @@ function renderSchedule(){
     const body=rows.map(i=>{const isHome=staff[i].home===st.id;
       return `<tr><td class="name" title="${esc(staff[i].name)}">${esc(staff[i].name)}${isHome?"":` <em>${esc(sById[staff[i].home]?.name||"")}</em>`}</td>${grid[i].map((c,j)=>{
         if(!isHome&&c.store!==st.id)return `<td class="${cls(days[j])}"></td>`;
-        return `<td class="${cls(days[j])}"><span class="cell k-${isHome&&c.store&&c.store!==st.id?"V":c.k}" title="${esc(WORD[c.k]||c.disp)}">${esc(isHome?c.disp:c.k)}</span></td>`}).join("")}</tr>`}).join("");
+        return `<td class="${cls(days[j])}"><span class="cell k-${isHome&&c.store&&c.store!==st.id?"V":c.k}${c.chg?" chg":""}" title="${esc((WORD[c.k]||c.disp)+(c.chg?" (changed, was "+(WORD[c.wasCell.k]||c.was)+")":""))}">${esc(isHome?c.disp:c.k)}</span></td>`}).join("")}</tr>`}).join("");
     return `<section class="store"><h3>${esc(st.name)} <span class="rule">${ruleText(st)}</span>${nW?`<span class="warn">${nW} day${nW>1?"s":""} need help</span>`:""}</h3>
       ${rows.length?`<div class="scroll"><table class="grid">${headRows(days)}<tbody>${body}
       <tr class="sub"><td class="name">People working</td>${sd.map((x,j)=>`<td class="${cls(days[j])}">${x.n}</td>`).join("")}</tr>
       <tr class="sub chk"><td class="name">Problems</td>${sd.map((x,j)=>`<td class="${cls(days[j])}">${x.chk?`<span class="flag">${esc(x.chk)}</span>`:""}</td>`).join("")}</tr>
       </tbody></table></div>`:`<p class="hint" style="padding:0 14px 14px">No staff here yet. Add them in Setup.</p>`}</section>`;
   }).join("");
-  $("#main").innerHTML=`${todayHtml}
+  const chHtml=R.changes.length?`<section class="changes"><h3>Changes because someone is absent</h3><ul>${R.changes.map(c=>`<li><b>${DOW[c.dow]} ${MONTHS[cur.m-1].slice(0,3)} ${c.d}:</b> ${esc(c.gone.join(", "))} absent. ${c.moved.length?"Tell them: "+esc(c.moved.join("; ")):"Nobody else needs to change."}</li>`).join("")}</ul></section>`:"";
+  $("#main").innerHTML=`${todayHtml}${chHtml}
   <p class="say">${warn?`<b>${warn} red box${warn>1?"es":""}</b> below: a store is missing an opener or closer that day. Fix it on the Day offs page by giving someone a different day off.`:`<b>All good.</b> Every store has its openers and closers every day.`}</p>
-  <div class="legend"><span><i class="chip k-O">O</i>Opening</span><span><i class="chip k-C">C</i>Closing</span><span><i class="chip k-S">S</i>Straight (open to close)</span><span><i class="chip k-M">M</i>Mid shift</span><span><i class="chip k-X">X</i>Day off</span><span><i class="chip k-H">H</i>Holiday off</span><span><i class="chip k-V">C-F</i>Working at another store (F = Florida)</span></div>
+  <div class="legend"><span><i class="chip k-O">O</i>Opening</span><span><i class="chip k-C">C</i>Closing</span><span><i class="chip k-S">S</i>Straight (open to close)</span><span><i class="chip k-M">M</i>Mid shift</span><span><i class="chip k-X">X</i>Day off</span><span><i class="chip k-H">H</i>Holiday off</span><span><i class="chip k-A">AB</i>Absent</span><span><i class="chip k-C chg">C</i>Changed to cover an absent person</span><span><i class="chip k-V">C-F</i>Working at another store (F = Florida)</span></div>
   ${blocks}
   <div class="tools"><button class="btn primary" id="copy">Copy schedule</button><span class="hint" id="copymsg">Paste it into Excel, Google Sheets or Messenger. It is also saved in your Google Sheet as a tab named ${mkey(cur.y,cur.m)}.</span></div>`;
   $("#copy").onclick=()=>{
@@ -493,8 +525,8 @@ function renderSetup(){
         <input class="t" id="hn-${h.i}" data-f="name" value="${esc(h.name)}" style="flex:1;min-width:12ch"><button class="btn danger" data-del="hol">Remove</button></div>`).join("")}</div>
       <div><button class="btn primary" id="addhol">Add a holiday</button></div>`);
   }
-  html+=sec("connect","Google Sheet connection",cfgLoaded?"Connected":"Not connected yet",`
-    <p class="hint">Your roster is saved in the <b>TFTG Roster Data</b> sheet in your Schedtftg folder. Do steps 1 to 3 once. Do step 4 on each phone or computer you use.</p>
+  html+=sec("connect","Google Sheet backup (optional)",conn.url?(cfgLoaded?"Connected":"Not connected"):"Not needed: saving on this device",`
+    <p class="hint"><b>You don't need this.</b> No key or PIN is needed: everything already saves on this phone or computer. Only do these steps if you also want a copy in the <b>TFTG Roster Data</b> sheet, or want to use the same roster on another device. To stop using the sheet, empty the box and press Connect.</p>
     <ol class="steps"><li>Open the <b>TFTG Roster Data</b> sheet and go to <b>Extensions › Apps Script</b>.</li>
     <li>Delete what's there and paste the code from <a href="https://github.com/epsdizon/TFTGSched/blob/main/apps-script/Code.gs" target="_blank" rel="noopener">Code.gs</a>.</li>
     <li>Click <b>Deploy › New deployment › Web app</b>. Set <b>Execute as: Me</b> and <b>Who has access: Anyone</b>. Click Deploy and allow access.</li>
@@ -502,7 +534,7 @@ function renderSetup(){
     <form id="cf" class="tools" style="align-items:end">
       <label class="f" style="flex:1;min-width:220px">Web app URL<input class="t" style="width:100%" id="curl" value="${esc(conn.url)}" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
       <button class="btn primary" type="submit">Connect</button></form>
-    <p class="hint" id="cmsg">${loadErr?esc(loadErr):(cfgLoaded?"Connected. Everything you change is saved to the sheet.":"")}</p>`);
+    <p class="hint" id="cmsg">${loadErr?esc(loadErr):(cfgLoaded?(conn.url?"Connected. Everything you change is saved to the sheet.":"Saving on this device."):"")}</p>`);
   $("#main").innerHTML=html;
   bindSetup(set);
 }
@@ -520,7 +552,7 @@ function bindSetup(set){
     if(kind==="hol"){cfg.holidays[i][t.dataset.f]=t.value.trim();saveCfg();}
     if(kind==="store"){const st=cfg.stores[i];
       if(t.dataset.f){let v=t.value.trim();if(t.dataset.f==="name"||t.dataset.f==="code")v=v.toUpperCase();
-        if(t.dataset.f==="code"&&/^(S|O|C|M|X|W|H|VL|SL)$/.test(v)){t.value=st.code;return}
+        if(t.dataset.f==="code"&&/^(S|O|C|M|X|W|H|VL|SL|AB)$/.test(v)){t.value=st.code;return}
         if(v===st.id)v="";st[t.dataset.f]=v;if(t.tagName==="INPUT")t.value=v;}
       if(t.dataset.n)st[t.dataset.n]=t.value===""?"":Number(t.value);
       if(t.dataset.mid)st.mid.start=t.value;
@@ -557,7 +589,6 @@ function render(){
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===tab));
   const old=$("#main"), fresh=old.cloneNode(false); old.replaceWith(fresh);
   if(tab==="setup")return renderSetup();
-  if(!conn.url){fresh.innerHTML=`<div class="empty"><b>First, connect your Google Sheet</b>Tap <b>Setup</b> above, then open "Google Sheet connection".</div>`;return}
   if(!cfgLoaded){fresh.innerHTML=loadErr?`<div class="empty"><b>Couldn't open your roster</b>${esc(loadErr)} Check the link in Setup.</div>`:`<div class="empty"><b>Loading your roster</b>Getting your stores, staff and day offs from Google Sheets.</div>`;return}
   if(!cfg.stores.length){fresh.innerHTML=`<div class="empty"><b>No stores yet</b>Add your stores and staff in Setup.</div>`;return}
   (tab==="schedule"?renderSchedule:renderDayoffs)();
@@ -565,11 +596,16 @@ function render(){
 
 // ======================= Google Sheet storage =======================
 async function api(body){
+  if(!conn.url){
+    if(body.action==="load")return {ok:true,config:lsGet(LSC)||DEFAULT_CFG,month:lsGet(LSM+body.month)};
+    if(body.action==="saveConfig")lsSet(LSC,body.config);
+    if(body.action==="saveMonth")lsSet(LSM+body.month,{entries:body.entries});
+    return {ok:true};
+  }
   const r=await fetch(conn.url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...body,pin:conn.pin})});
   const j=await r.json(); if(!j.ok)throw new Error(j.error||"Save failed"); return j;
 }
 async function loadAll(first){
-  if(!conn.url){render();return}
   const seq=++loadSeq, k=mkey(cur.y,cur.m);
   setStatus("Loading…");
   try{
@@ -607,7 +643,6 @@ $("#prev").onclick=()=>step(-1);$("#next").onclick=()=>step(1);
 $("#tabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;tab=b.dataset.tab;history.replaceState(null,"","#"+tab);render()};
 window.addEventListener("focus",()=>{if(cfgLoaded&&!pendingCfg&&!pendingMonth&&!document.activeElement.closest?.("main"))loadAll()});
 window.addEventListener("resize",setHdr);
-if(!conn.url){tab="setup";openSec="connect"}
 render();loadAll(true);
 })();
 </script>
