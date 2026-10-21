@@ -1,4 +1,4 @@
-const PIN = 'CHANGE-ME'; // Change this to your own PIN before deploying.
+const PIN = ''; // Optional. Leave empty for no PIN.
 
 /*
   TFTG Roster storage. Paste this into the "TFTG Roster Data" Google Sheet
@@ -18,7 +18,7 @@ function doPost(e) {
 }
 
 function handle_(p) {
-  if (String(p.pin || '') !== PIN) return out_({ ok: false, error: 'Wrong PIN.' });
+  if (PIN && String(p.pin || '') !== PIN) return out_({ ok: false, error: 'Wrong PIN.' });
   const ss = SpreadsheetApp.getActive();
   const data = ss.getSheetByName('Data') || ss.insertSheet('Data');
   const lock = LockService.getScriptLock();
