@@ -375,13 +375,15 @@ function calcCore(noAbs,opt){
           // only for a 2nd closer: just people still under their limit, keeping room for days they must work alone
           const ok=free.filter(i=>sOK(i)&&fits(resvMust,i)).sort((a,b)=>hTurn(a,b,"S")||fair(a,b)).slice(0,tot-must);
           ok.forEach(i=>giveS(i,false)); if(ok.length<tot-must)sCapped=true;
-        }else if(n>=3&&opens<maxO){
+        }else if(closes<minC&&opens+1+(k-1-Math.max(0,minC-closes-1))<=maxO&&k-1>=Math.max(0,minC-closes-1)){
+          // a Straight only when the others can be the missing closer + openers: S-O-C, never S-C-C
           const cand=free.filter(i=>wS(i)<sMin&&rotRoom(i)&&sOK(i)).sort((a,b)=>hTurn(a,b,"S")||fair(a,b));
           if(cand.length)giveS(cand[0],false);
         }
+        // 1 opener and the needed closers first; anyone extra opens (up to "most openers"), after that they close
         let nO=Math.max(0,1-opens);
-        const nC=Math.max(0,minC-closes);
-        if(n>=4&&opens+nO<maxO&&free.length-nO>nC)nO++;
+        const nC=Math.max(0,minC-closes), extra=free.length-nO-nC;
+        if(extra>0)nO+=Math.min(extra,Math.max(0,maxO-opens-nO));
         free.sort((a,b)=>hTurn(a,b,"O")||cnt[a].O-cnt[b].O||rot(a)-rot(b));
         free.splice(0,Math.min(nO,free.length)).forEach(i=>{shift[i]="O";opens++});
         free.forEach(i=>{shift[i]="C";closes++});
@@ -710,7 +712,7 @@ function renderSetup(){
       ${midHtml}
       <div class="delwrap"><button class="btn danger" data-del="store">Remove store</button></div></div>`}).join("");
     html+=sec("stores","Stores and shift rules","Openers, closers, mid shifts, who covers who",`
-      <div class="subcard"><h4>Straight shifts</h4><p class="hint">Straight means open to close, so it counts as an opener and a closer. Each person gets at most this many Straights. When everyone at a store has reached the limit, the store gets 1 closer that day instead (marked in yellow). Someone working alone still gets Straight, and that day is marked red if it goes over.</p>
+      <div class="subcard"><h4>Straight shifts</h4><p class="hint">Straight means open to close, so it counts as an opener and a closer. A Straight always comes with an opener: 3 people work S-O-C or O-C-C, never S-C-C. Each person gets at most this many Straights. When everyone at a store has reached the limit, the store gets 1 closer that day instead (marked in yellow). Someone working alone still gets Straight, and that day is marked red if it goes over.</p>
       <div class="tools"><label class="f">Most a week<input class="t num" type="number" min="0" max="7" id="smax" value="${num(set.sMax,2)}"></label><label class="f">Most a month<input class="t num" type="number" min="0" max="31" id="smon" value="${num(set.sMonth,6)}"></label><label class="f">Try to give each week<input class="t num" type="number" min="0" max="7" id="smin" value="${num(set.sMin,1)}"></label></div></div>
       ${storeCards}<div><button class="btn primary" id="addstore">Add a store</button></div>`);
     // holidays
