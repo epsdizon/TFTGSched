@@ -249,10 +249,14 @@ function usualDay(s,d){const w=s.week||{};if(w[d]!=null&&w[d]!=="")return w[d];r
 // Straight limit per person: at most "sMax" in a Mon–Sun week and "sMonth" in a month (defaults 2 and 6).
 // A first pass without the "everyone gets 1 a week" rotation finds the Straights each person will need for cover,
 // so the rotation never uses up a Straight that is needed later in the month.
-function calc(noAbs,carry){
-  const plan=calcCore(noAbs,{noRot:true,carry});
-  return calcCore(noAbs,{resv:plan.sDays,resvMust:plan.mustDays,carry});
+function calc(noAbs,ctx){
+  const plan=calcCore(noAbs,{noRot:true,...ctx});
+  return calcCore(noAbs,{resv:plan.sDays,resvMust:plan.mustDays,...ctx});
 }
+// holiday turns per person (this year): S = holiday Straights, O = holiday openings, offR/offP = regular/special
+// holidays off; lastS / lastOff = what they had on the most recent holiday
+const holBlank=()=>({S:0,O:0,offR:0,offP:0,offAll:0,lastS:false,lastOff:false});
+const holNewYear=h=>Object.fromEntries(Object.entries(h).map(([id,v])=>[id,{...holBlank(),lastS:v.lastS,lastOff:v.lastOff}]));
 function calcCore(noAbs,opt){
   const {y,m}=cur, N=new Date(y,m,0).getDate();
   const stores=cfg.stores, staff=cfg.staff, set=cfg.settings||{};
@@ -264,6 +268,7 @@ function calcCore(noAbs,opt){
   const days=[], grid=staff.map(()=>[]);
   const cnt=staff.map((s,i)=>({S:0,O:0,C:0,M:0,off:0,reg:0,spec:0,ov:0,bk:0,wk:{0:(opt.carry&&opt.carry[i])||0},mw:{}}));
   const sDays=staff.map(()=>[]), mustDays=staff.map(()=>[]), resv=opt.resv||null, resvMust=opt.resvMust||null;
+  const hs=staff.map(s=>({...holBlank(),...((opt.hist&&opt.hist[s.id])||{})}));
   const storeDay=Object.fromEntries(stores.map(s=>[s.id,[]]));
   const midGiven={}; // store|week -> count
   const off0=(new Date(y,m-1,1).getDay()+6)%7, N_=Math.max(staff.length,1);
@@ -317,8 +322,9 @@ function calcCore(noAbs,opt){
         const keep=Math.max(holNeed(st),Number(st.holCrew)||0);
         const crew=P.map((p,i)=>i).filter(i=>P[i].base===st.id), el=crew.filter(movable);
         const off=Math.min(el.length,crew.length-keep); if(off<=0)return;
-        const start=(ord*off)%el.length;
-        for(let j=0;j<off;j++){const i=el[(start+j)%el.length];P[i].base=null;P[i].forced=null;P[i].off="H"}
+        const tk=type==="special"?"offP":"offR", pos=i=>mod(el.indexOf(i)-ord,el.length);
+        [...el].sort((a,b)=>hs[a][tk]-hs[b][tk]||hs[b].lastS-hs[a].lastS||hs[a].offAll-hs[b].offAll||hs[a].lastOff-hs[b].lastOff||pos(a)-pos(b))
+          .slice(0,off).forEach(i=>{P[i].base=null;P[i].forced=null;P[i].off="H"});
       });
     }
     // shifts
@@ -329,10 +335,13 @@ function calcCore(noAbs,opt){
     const fut=(list,i,sameWeek)=>list?list[i].filter(x=>x>d&&(!sameWeek||Math.floor((x-1+off0)/7)===week)).length:0;
     const fits=(list,i)=>wS(i)+1+fut(list,i,true)<=sMaxW&&cnt[i].S+1+fut(list,i,false)<=sMaxM;
     const rotRoom=i=>fits(resv,i);
+    // on a holiday nobody gets Straight twice in a row, and holiday Straights / openings take turns
+    const sOK=i=>hasRoom(i)&&!(hol&&hs[i].lastS);
+    const hTurn=(a,b,k)=>hol?hs[a][k]-hs[b][k]:0;
     stores.forEach(st=>{
       const minC=Math.max(1,num(st.closers,2)), maxO=Math.max(1,num(st.maxOpen,2));
       const w=P.map((p,i)=>i).filter(i=>P[i].base===st.id), n=w.length;
-      let opens=0,closes=0,overS=false,sCapped=false;
+      let opens=0,closes=0,overS=false,sCapped=false,holAgain=false;
       w.filter(i=>P[i].forced).forEach(i=>{const L=P[i].forced;shift[i]=L;if(L==="S"){if(!hasRoom(i))overS=true;mustDays[i].push(d)}if(L==="S"||L==="O")opens++;if(L==="S"||L==="C")closes++;});
       let free=w.filter(i=>!P[i].forced);
       // mid-shift plan
@@ -357,23 +366,23 @@ function calcCore(noAbs,opt){
         const needO=Math.max(0,1-opens), needC=Math.max(0,minC-closes);
         const load=(i,wk)=>(wk?wS(i):cnt[i].S)+fut(resv,i,wk);
         const fair=(a,b)=>load(a,true)-load(b,true)||load(a,false)-load(b,false)||rot(a)-rot(b);
-        const giveS=(i,must)=>{if(!hasRoom(i))overS=true;if(must)mustDays[i].push(d);shift[i]="S";opens++;closes++;free=free.filter(x=>x!==i)};
+        const giveS=(i,must)=>{if(!hasRoom(i))overS=true;else if(hol&&hs[i].lastS)holAgain=true;if(must)mustDays[i].push(d);shift[i]="S";opens++;closes++;free=free.filter(x=>x!==i)};
         if(needO>0&&needC>0&&needO+needC>k){
           const tot=Math.min(k,needO+needC-k);
           // must: someone working alone has to open and close, even past the limit (flagged red)
           const must=Math.min(tot,Math.max(0,(opens?0:1)+(closes?0:1)-k));
-          [...free].sort((a,b)=>hasRoom(b)-hasRoom(a)||fair(a,b)).slice(0,must).forEach(i=>giveS(i,true));
+          [...free].sort((a,b)=>sOK(b)-sOK(a)||hasRoom(b)-hasRoom(a)||hTurn(a,b,"S")||fair(a,b)).slice(0,must).forEach(i=>giveS(i,true));
           // only for a 2nd closer: just people still under their limit, keeping room for days they must work alone
-          const ok=free.filter(i=>hasRoom(i)&&fits(resvMust,i)).sort(fair).slice(0,tot-must);
+          const ok=free.filter(i=>sOK(i)&&fits(resvMust,i)).sort((a,b)=>hTurn(a,b,"S")||fair(a,b)).slice(0,tot-must);
           ok.forEach(i=>giveS(i,false)); if(ok.length<tot-must)sCapped=true;
         }else if(n>=3&&opens<maxO){
-          const cand=free.filter(i=>wS(i)<sMin&&rotRoom(i)).sort(fair);
+          const cand=free.filter(i=>wS(i)<sMin&&rotRoom(i)&&sOK(i)).sort((a,b)=>hTurn(a,b,"S")||fair(a,b));
           if(cand.length)giveS(cand[0],false);
         }
         let nO=Math.max(0,1-opens);
         const nC=Math.max(0,minC-closes);
         if(n>=4&&opens+nO<maxO&&free.length-nO>nC)nO++;
-        free.sort((a,b)=>cnt[a].O-cnt[b].O||rot(a)-rot(b));
+        free.sort((a,b)=>hTurn(a,b,"O")||cnt[a].O-cnt[b].O||rot(a)-rot(b));
         free.splice(0,Math.min(nO,free.length)).forEach(i=>{shift[i]="O";opens++});
         free.forEach(i=>{shift[i]="C";closes++});
       }
@@ -384,7 +393,7 @@ function calcCore(noAbs,opt){
         const t=opn.find(i=>!P[i].forced), sw=w.find(i=>!tr(i)&&!P[i].forced&&(shift[i]==="C"||shift[i]==="M"));
         if(t!=null&&sw!=null){
           // a Straight only moves to someone still under the limit; otherwise they open together with the trainee
-          if(shift[t]==="S"&&!hasRoom(sw)){if(shift[sw]==="C")closes--;shift[sw]="O";opens++;sCapped=true}
+          if(shift[t]==="S"&&!sOK(sw)){if(shift[sw]==="C")closes--;shift[sw]="O";opens++;sCapped=true}
           else{const a=shift[t];shift[t]=shift[sw];shift[sw]=a}
         }else trainAlone=true;
       }
@@ -394,6 +403,7 @@ function calcCore(noAbs,opt){
       else if(!opens)chk="No opener";
       else if(!closes)chk="No closer";
       else if(overS)chk="Too many S";
+      else if(holAgain)chk="Holiday S again";
       else if(n>1&&closes<minC&&!sCapped)chk="Need closer";
       else if(trainAlone)chk="Trainee alone";
       if(!chk&&n>1&&closes<minC&&sCapped)note="1 closer only";
@@ -405,27 +415,49 @@ function calcCore(noAbs,opt){
         if(hol){hol.type==="special"?cnt[i].spec++:cnt[i].reg++}
         grid[i].push({k:L,store:p.base,disp:L+(p.base!==s.home?"-"+(sById[p.base].code||"?"):"")});}
       else{cnt[i].off++;grid[i].push({k:p.off==="H"?"H":p.off==="X"?"X":p.off==="AB"?"A":"L",store:null,disp:p.off,weekly:p.weekly})}
+      if(hol){const h=hs[i],L=p.base?shift[i]:null;
+        if(L){h.lastS=L==="S";h.lastOff=false;if(L==="S")h.S++;if(L==="O")h.O++}
+        else{h.lastS=false;h.lastOff=true;h.offAll++;hol.type==="special"?h.offP++:h.offR++}}
     });
   }
-  return {N,days,grid,cnt,storeDay,sById,sDays,mustDays};
+  return {N,days,grid,cnt,storeDay,sById,sDays,mustDays,holState:Object.fromEntries(staff.map((s,i)=>[s.id,hs[i]]))};
 }
 // Absent: only the absent day is re-planned; every other day stays exactly as before.
 const monthCache={};
-function entriesFor(k){if(monthCache[k])return monthCache[k];if(!conn.url){const v=lsGet(LSM+k);return (v&&v.entries)||{}}return null}
-function prevCarry(){
-  const {y,m}=cur, back=(new Date(y,m-1,1).getDay()+6)%7; if(!back)return null;
-  const py=m===1?y-1:y, pm=m===1?12:m-1, pe=entriesFor(mkey(py,pm)); if(!pe)return null;
-  const keep={cur,entries}; let R;
-  try{cur={y:py,m:pm};entries=pe;R=calc(false,null)}finally{cur=keep.cur;entries=keep.entries}
-  return cfg.staff.map((s,i)=>R.grid[i].slice(R.N-back).filter(c=>c.k==="S").length);
+function knownEntries(k){if(monthCache[k])return monthCache[k];if(!conn.url){const v=lsGet(LSM+k);return v?(v.entries||{}):null}return null}
+const histMemo={key:null,val:null};
+function monthHistory(){
+  const {y,m}=cur, list=[];
+  for(let k=12;k>=1;k--){let mm=m-k,yy=y;while(mm<1){mm+=12;yy--}list.push([yy,mm])}
+  const known=list.map(([yy,mm])=>knownEntries(mkey(yy,mm)));
+  let s=known.findIndex(e=>e!=null);
+  if(!conn.url){if(s<0)s=list.length-1}
+  else{s=list.length;while(s>0&&known[s-1]!=null)s--}
+  if(s>=list.length)return {carry:null,hist:null};
+  const key=JSON.stringify([y,m,cfg,known.slice(s)]);
+  if(histMemo.key===key)return histMemo.val;
+  const keep={cur,entries}; let carry=null,hist=null;
+  try{
+    for(let j=s;j<list.length;j++){
+      const [yy,mm]=list[j]; cur={y:yy,m:mm}; entries=known[j]||{};
+      if(mm===1&&hist)hist=holNewYear(hist);
+      const R=calc(false,{carry,hist});
+      const back=(new Date(yy,mm,1).getDay()+6)%7;
+      carry=back?cfg.staff.map((st,i)=>R.grid[i].slice(R.N-back).filter(c=>c.k==="S").length):null;
+      hist=R.holState;
+    }
+  }finally{cur=keep.cur;entries=keep.entries}
+  if(m===1&&hist)hist=holNewYear(hist);
+  histMemo.key=key; histMemo.val={carry,hist};
+  return histMemo.val;
 }
 function compute(){
   const absDays=new Set();
   Object.values(entries).forEach(e=>Object.entries(e).forEach(([d,v])=>{if(v==="AB")absDays.add(+d)}));
-  const carry=prevCarry();
-  const A=calc(false,carry); A.changes=[];
+  const ctx=monthHistory();
+  const A=calc(false,ctx); A.changes=[];
   if(!absDays.size)return A;
-  const B=calc(true,carry), staff=cfg.staff, changes=[];
+  const B=calc(true,ctx), staff=cfg.staff, changes=[];
   const grid=B.grid.map((row,i)=>row.map((c,j)=>{
     if(!absDays.has(j+1))return c;
     const a=A.grid[i][j];
@@ -590,7 +622,7 @@ function dayBoard(R,j){
     const away=staff.map((s,i)=>i).filter(i=>staff[i].home===st.id&&grid[i][j].store!==st.id).map(i=>{const c=grid[i][j];
       return `<b>${esc(staff[i].name)}</b> ${c.store?"at "+esc(sById[c.store]?.name||""):offWord(c).toLowerCase()}`});
     return `<section class="store"><h3>${esc(st.name)} <span class="rule">${who.length} working</span></h3>
-      ${sd.chk?`<p class="warnline">Needs help: ${esc(sd.chk)}</p>`:""}${sd.note?`<p class="warnline note">Only 1 closer: everyone here already has their Straights for the week or month.</p>`:""}
+      ${sd.chk?`<p class="warnline">Needs help: ${esc(sd.chk)}</p>`:""}${sd.note?`<p class="warnline note">Only 1 closer: nobody here can take a Straight today (they reached the limit${days[j].hol?", or had Straight on the last holiday":""}).</p>`:""}
       <div class="timeline">${who.length?`<div class="axis"><span>Open</span><span>Midday</span><span>Close</span></div>${lanes}`:`<p class="hint">Nobody works here today.</p>`}
       ${away.length?`<p class="offline">Not here: ${away.join(", ")}</p>`:""}${who.some(x=>grid[x[0]][j].chg)?`<p class="offline">✱ moved to cover an absent person</p>`:""}</div></section>`}).join("")}</div>`;
 }
@@ -630,7 +662,7 @@ function renderSchedule(){
   const chHtml=ch.length?`<section class="changes"><h3>Changes because someone is absent</h3><ul>${ch.map(c=>`<li><b>${DOW[c.dow]} ${MONTHS[cur.m-1].slice(0,3)} ${c.d}:</b> ${esc(c.gone.join(", "))} absent. ${c.moved.length?"Tell them: "+esc(c.moved.join("; ")):"Nobody else needs to change."}</li>`).join("")}</ul></section>`:"";
   const span=view==="day"?"today":view==="week"?"this week":"this month";
   $("#main").innerHTML=`${viewBar(days,idx)}${todayHtml}${chHtml}
-  <p class="say">${warn?`<b>${warn} problem${warn>1?"s":""}</b> ${span}, shown in red below. Fix ${warn>1?"them":"it"} on the Day offs page by moving someone's day off.`:notes?`<b>No problems ${span}.</b>`:`<b>All good ${span}.</b> Every store has its openers and closers.`}${notes?` <span class="note">${notes} day${notes>1?"s have":" has"} only 1 closer because everyone there already used their Straights (most ${num((cfg.settings||{}).sMax,2)} a week, ${sLimM()} a month).</span>`:""}</p>
+  <p class="say">${warn?`<b>${warn} problem${warn>1?"s":""}</b> ${span}, shown in red below. Fix ${warn>1?"them":"it"} on the Day offs page by moving someone's day off.`:notes?`<b>No problems ${span}.</b>`:`<b>All good ${span}.</b> Every store has its openers and closers.`}${notes?` <span class="note">${notes} day${notes>1?"s have":" has"} only 1 closer because nobody there could take another Straight (most ${num((cfg.settings||{}).sMax,2)} a week, ${sLimM()} a month, never on two holidays in a row).</span>`:""}</p>
   ${view==="day"?"":`<div class="legend"><span><i class="chip k-O">O</i>Opening</span><span><i class="chip k-M">M</i>Mid shift</span><span><i class="chip k-C">C</i>Closing</span><span><i class="chip k-S">S</i>Straight, open to close</span><span><i class="chip k-X">X</i>Day off</span><span><i class="chip k-H">H</i>Holiday off</span><span><i class="chip k-A">AB</i>Absent</span><span><i class="chip k-C chg">C</i>Changed to cover</span><span><i class="chip k-V">C-F</i>At another store (F = Florida)</span></div>`}
   ${blocks}
   <div class="tools"><button class="btn primary" id="copy">Copy ${MONTHS[cur.m-1]} schedule</button><span class="hint" id="copymsg">Paste it into Excel, Google Sheets or Messenger.</span></div>`;
@@ -684,7 +716,7 @@ function renderSetup(){
     // holidays
     const list=(cfg.holidays||[]).map((h,i)=>({...h,i})).sort((a,b)=>(a.date||"9").localeCompare(b.date||"9"));
     html+=sec("holidays","Holidays",`${list.length} dates · regular and special share the days off evenly`,`
-      <p class="hint">On a holiday every store still runs a normal day: 1 opener and its usual closers, with Straight only when it would be given anyway. Anyone extra gets the holiday off. Regular holidays (double pay) and special non-working days (+30%) take turns separately, so everyone gets the same share of both. "Work on holidays" under Stores can raise how many work; leave it empty for everyone.</p>
+      <p class="hint">On a holiday every store still runs a normal day: 1 opener and its usual closers, with Straight only when it would be given anyway. Holidays take turns: nobody gets Straight on two holidays in a row, and holiday Straights, openings and days off go to whoever has had the fewest so far this year. Anyone extra gets the holiday off. Regular holidays (double pay) and special non-working days (+30%) take turns separately, so everyone gets the same share of both. "Work on holidays" under Stores can raise how many work; leave it empty for everyone.</p>
       <div class="rows">${list.map(h=>`<div class="row" data-kind="hol" data-i="${h.i}"><input class="t" type="date" id="hd-${h.i}" data-f="date" value="${esc(h.date)}">
         <select class="t" id="ht-${h.i}" data-f="type"><option value="regular"${h.type!=="special"?" selected":""}>Regular</option><option value="special"${h.type==="special"?" selected":""}>Special</option></select>
         <input class="t" id="hn-${h.i}" data-f="name" value="${esc(h.name)}" style="flex:1;min-width:12ch"><button class="btn danger" data-del="hol">Remove</button></div>`).join("")}</div>
