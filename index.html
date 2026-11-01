@@ -14,7 +14,7 @@
   --o:#ffe2a1; --o-ink:#6a4300; --m:#cbe9ff; --m-ink:#0b4a72; --c:#d8d0ff; --c-ink:#3a2a8c;
   --s:linear-gradient(90deg,#ffe2a1 0%,#ffd2c2 50%,#d8d0ff 100%); --s-ink:#1a2238;
   --x:#e2e6ee; --x-ink:#47506a; --h:#ffd3dc; --h-ink:#8a1d33; --mv:#cdf1e7; --mv-ink:#0d5a4a;
-  --a:#d33a3a; --a-ink:#ffffff; --hol:#fff6dc; --sun:#f3f1fa;
+  --a:#d33a3a; --a-ink:#ffffff; --hol:#fff6dc; --sun:#f3f1fa; --note-ink:#8a5200;
   --bad:#c42b33; --bad-ink:#ffffff;
   --f:"Schibsted Grotesk",ui-sans-serif,system-ui,sans-serif;
   --f-display:var(--f); --f-body:var(--f); --f-mono:var(--f);
@@ -26,7 +26,7 @@
   --o:#5a4312; --o-ink:#ffe2a1; --m:#14425f; --m-ink:#cbe9ff; --c:#37296e; --c-ink:#ded7ff;
   --s:linear-gradient(90deg,#5a4312 0%,#5a2f3a 50%,#37296e 100%); --s-ink:#fff4e0;
   --x:#2a3245; --x-ink:#c3cadb; --h:#55222d; --h-ink:#ffc9d3; --mv:#16473d; --mv-ink:#bff3e3;
-  --a:#e5545b; --a-ink:#1a0506; --hol:#2e2a1a; --sun:#1d2234;
+  --a:#e5545b; --a-ink:#1a0506; --hol:#2e2a1a; --sun:#1d2234; --note-ink:#f5b443;
   --bad:#ff6b72; --bad-ink:#1a0506; color-scheme:dark}}
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -65,6 +65,9 @@ main>*{min-width:0}
 .k-S{background:var(--s);color:var(--s-ink)} .k-O{background:var(--o);color:var(--o-ink)} .k-C{background:var(--c);color:var(--c-ink)} .k-M{background:var(--m);color:var(--m-ink)}
 .k-X,.k-L{background:var(--x);color:var(--x-ink)} .k-H{background:var(--h);color:var(--h-ink)} .k-V{background:var(--mv);color:var(--mv-ink)} .k-A{background:var(--a);color:var(--a-ink)}
 .chg{box-shadow:0 0 0 2px var(--ink) inset}
+.flag.note{background:var(--mark);color:#3a2600}
+.store h3 .warn.note,.store .warnline.note,.say .note{color:var(--note-ink)}
+.grid td.tot.over{color:var(--bad)}
 .changes{background:var(--panel);border-left:6px solid var(--a);border-radius:12px;padding:14px 16px}
 .changes h3{margin:0 0 6px;font-size:1.05rem} .changes ul{margin:0;padding-left:1.1em} .changes li{margin:4px 0}
 /* view switch */
@@ -214,7 +217,7 @@ const DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
 const LETTERS="SOCM";
 const WORD={S:"Straight",O:"Opening",C:"Closing",M:"Mid shift",X:"Day off",H:"Holiday off",VL:"Vacation leave",SL:"Sick leave",AB:"Absent"};
-const DEFAULT_CFG={"stores":[{"id":"asc","name":"ASCOMO","code":"A","holCrew":2,"maxOnDuty":2,"overflowTo":"flo","minOnDuty":1,"backupFrom":"res","maxOpen":1,"closers":1},{"id":"flo","name":"FLORIDA","code":"F","holCrew":2,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":2,"closers":2},{"id":"por","name":"PORAC","code":"P","holCrew":2,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":2,"closers":2},{"id":"res","name":"RESETTLE","code":"R","holCrew":1,"maxOnDuty":"","overflowTo":"","minOnDuty":1,"backupFrom":"","maxOpen":1,"closers":1},{"id":"cal","name":"CALOOCAN","code":"CAL","holCrew":2,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":1,"closers":1,"mid":{"start":"2026-11-02","weeks":[{"lala":2,"lee":1,"jr":1},{"lala":1,"lee":2,"jr":1},{"lala":1,"lee":1,"jr":2}]}}],"staff":[{"id":"jerald","name":"JERALD","home":"asc","week":{}},{"id":"arjay","name":"ARJAY","home":"asc","week":{}},{"id":"carmi","name":"CARMI","home":"flo","week":{}},{"id":"kate","name":"KATE","home":"flo","week":{}},{"id":"bryan","name":"BRYAN","home":"asc","week":{}},{"id":"sarah","name":"SARAH","home":"por","week":{}},{"id":"marnella","name":"MARNELLA","home":"por","week":{}},{"id":"jomel","name":"JOMEL","home":"por","week":{"Mon":"","Tue":"C","Wed":"O","Thu":"C","Fri":"C","Sat":"O","Sun":"X"}},{"id":"jenny","name":"JENNY","home":"por","week":{},"trainee":true},{"id":"jun","name":"JUN","home":"res","week":{}},{"id":"jonas","name":"JONAS","home":"res","week":{}},{"id":"lala","name":"LALA","home":"cal","week":{}},{"id":"lee","name":"LEE","home":"cal","week":{}},{"id":"jr","name":"JR","home":"cal","week":{}}],"holidays":[{"date":"2026-01-01","name":"New Year's Day","type":"regular"},{"date":"2026-02-17","name":"Chinese New Year","type":"special"},{"date":"2026-03-20","name":"Eid'l Fitr","type":"regular"},{"date":"2026-04-02","name":"Maundy Thursday","type":"regular"},{"date":"2026-04-03","name":"Good Friday","type":"regular"},{"date":"2026-04-04","name":"Black Saturday","type":"special"},{"date":"2026-04-09","name":"Araw ng Kagitingan","type":"regular"},{"date":"2026-05-01","name":"Labor Day","type":"regular"},{"date":"2026-06-12","name":"Independence Day","type":"regular"},{"date":"2026-08-21","name":"Ninoy Aquino Day","type":"special"},{"date":"2026-08-31","name":"National Heroes Day","type":"regular"},{"date":"2026-11-01","name":"All Saints' Day","type":"special"},{"date":"2026-11-02","name":"All Souls' Day","type":"special"},{"date":"2026-11-30","name":"Bonifacio Day","type":"regular"},{"date":"2026-12-08","name":"Immaculate Conception","type":"special"},{"date":"2026-12-24","name":"Christmas Eve","type":"special"},{"date":"2026-12-25","name":"Christmas Day","type":"regular"},{"date":"2026-12-30","name":"Rizal Day","type":"regular"},{"date":"2026-12-31","name":"Last Day of the Year","type":"special"}],"settings":{"sMin":1,"sMax":2}};
+const DEFAULT_CFG={"stores":[{"id":"asc","name":"ASCOMO","code":"A","holCrew":2,"maxOnDuty":2,"overflowTo":"flo","minOnDuty":1,"backupFrom":"res","maxOpen":1,"closers":1},{"id":"flo","name":"FLORIDA","code":"F","holCrew":3,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":2,"closers":2},{"id":"por","name":"PORAC","code":"P","holCrew":3,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":2,"closers":2},{"id":"res","name":"RESETTLE","code":"R","holCrew":2,"maxOnDuty":"","overflowTo":"","minOnDuty":1,"backupFrom":"","maxOpen":1,"closers":1},{"id":"cal","name":"CALOOCAN","code":"CAL","holCrew":2,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":1,"closers":1,"mid":{"start":"2026-11-02","weeks":[{"lala":2,"lee":1,"jr":1},{"lala":1,"lee":2,"jr":1},{"lala":1,"lee":1,"jr":2}]}}],"staff":[{"id":"jerald","name":"JERALD","home":"asc","week":{}},{"id":"arjay","name":"ARJAY","home":"asc","week":{}},{"id":"carmi","name":"CARMI","home":"flo","week":{}},{"id":"kate","name":"KATE","home":"flo","week":{}},{"id":"bryan","name":"BRYAN","home":"asc","week":{}},{"id":"sarah","name":"SARAH","home":"por","week":{}},{"id":"marnella","name":"MARNELLA","home":"por","week":{}},{"id":"jomel","name":"JOMEL","home":"por","week":{"Mon":"","Tue":"C","Wed":"O","Thu":"C","Fri":"C","Sat":"O","Sun":"X"}},{"id":"jenny","name":"JENNY","home":"por","week":{},"trainee":true},{"id":"jun","name":"JUN","home":"res","week":{}},{"id":"jonas","name":"JONAS","home":"res","week":{}},{"id":"lala","name":"LALA","home":"cal","week":{}},{"id":"lee","name":"LEE","home":"cal","week":{}},{"id":"jr","name":"JR","home":"cal","week":{}}],"holidays":[{"date":"2026-01-01","name":"New Year's Day","type":"regular"},{"date":"2026-02-17","name":"Chinese New Year","type":"special"},{"date":"2026-03-20","name":"Eid'l Fitr","type":"regular"},{"date":"2026-04-02","name":"Maundy Thursday","type":"regular"},{"date":"2026-04-03","name":"Good Friday","type":"regular"},{"date":"2026-04-04","name":"Black Saturday","type":"special"},{"date":"2026-04-09","name":"Araw ng Kagitingan","type":"regular"},{"date":"2026-05-01","name":"Labor Day","type":"regular"},{"date":"2026-06-12","name":"Independence Day","type":"regular"},{"date":"2026-08-21","name":"Ninoy Aquino Day","type":"special"},{"date":"2026-08-31","name":"National Heroes Day","type":"regular"},{"date":"2026-11-01","name":"All Saints' Day","type":"special"},{"date":"2026-11-02","name":"All Souls' Day","type":"special"},{"date":"2026-11-30","name":"Bonifacio Day","type":"regular"},{"date":"2026-12-08","name":"Immaculate Conception","type":"special"},{"date":"2026-12-24","name":"Christmas Eve","type":"special"},{"date":"2026-12-25","name":"Christmas Day","type":"regular"},{"date":"2026-12-30","name":"Rizal Day","type":"regular"},{"date":"2026-12-31","name":"Last Day of the Year","type":"special"}],"settings":{"sMin":1,"sMax":2,"sMonth":6}};
 const LSC="tftg-roster-config", LSM="tftg-roster-month:";
 const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
@@ -235,22 +238,32 @@ const h0=location.hash.slice(1); if(["schedule","dayoffs","setup"].includes(h0))
 function setStatus(t,bad){const s=$("#status");s.textContent=t;s.classList.toggle("bad",!!bad)}
 const num=(v,d)=>v===""||v==null||isNaN(Number(v))?d:Number(v);
 const USUAL=["","X","O","C","S","M"], USUALW={"":"Any",X:"Off",O:"Open",C:"Close",S:"Straight",M:"Mid"};
+const holNeed=st=>1+Math.max(1,num(st.closers,2)); // a normal day: 1 opener + the store's closers
+const sLimM=()=>num((cfg&&cfg.settings||{}).sMonth,6);
 function usualDay(s,d){const w=s.week||{};if(w[d]!=null&&w[d]!=="")return w[d];return (s.weekly||[]).includes(d)?"X":""}
 
 // ======================= scheduling rules =======================
 // Per store: openers (1 up to "most openers"), at least "closers" closers. Straight counts as opener and closer.
 // Straight per person per Mon–Sun week: aim for sMin, avoid going over sMax.
 // Mid-shift plan (Caloocan): each week of the cycle says how many mids each person gets.
-function calc(noAbs){
+// Straight limit per person: at most "sMax" in a Mon–Sun week and "sMonth" in a month (defaults 2 and 6).
+// A first pass without the "everyone gets 1 a week" rotation finds the Straights each person will need for cover,
+// so the rotation never uses up a Straight that is needed later in the month.
+function calc(noAbs,carry){
+  const plan=calcCore(noAbs,{noRot:true,carry});
+  return calcCore(noAbs,{resv:plan.sDays,resvMust:plan.mustDays,carry});
+}
+function calcCore(noAbs,opt){
   const {y,m}=cur, N=new Date(y,m,0).getDate();
   const stores=cfg.stores, staff=cfg.staff, set=cfg.settings||{};
-  const sMin=num(set.sMin,1);
+  const sMin=opt.noRot?0:num(set.sMin,1), sMaxW=num(set.sMax,2), sMaxM=num(set.sMonth,6);
   const sById=Object.fromEntries(stores.map(s=>[s.id,s]));
   const byCode={}; stores.forEach(s=>{if(s.code)byCode[String(s.code).toUpperCase()]=s.id});
   const hols=(cfg.holidays||[]).filter(h=>h.date);
   const holOn=Object.fromEntries(hols.map(h=>[h.date,h]));
   const days=[], grid=staff.map(()=>[]);
-  const cnt=staff.map(()=>({S:0,O:0,C:0,M:0,off:0,reg:0,spec:0,ov:0,bk:0,wk:{},mw:{}}));
+  const cnt=staff.map((s,i)=>({S:0,O:0,C:0,M:0,off:0,reg:0,spec:0,ov:0,bk:0,wk:{0:(opt.carry&&opt.carry[i])||0},mw:{}}));
+  const sDays=staff.map(()=>[]), mustDays=staff.map(()=>[]), resv=opt.resv||null, resvMust=opt.resvMust||null;
   const storeDay=Object.fromEntries(stores.map(s=>[s.id,[]]));
   const midGiven={}; // store|week -> count
   const off0=(new Date(y,m-1,1).getDay()+6)%7, N_=Math.max(staff.length,1);
@@ -279,20 +292,6 @@ function calc(noAbs){
     });
     const auto=i=>P[i].raw===""&&P[i].base===staff[i].home;
     const movable=i=>auto(i)&&!P[i].fixed;
-    // holidays: regular and special rotate separately
-    if(hol){
-      const type=hol.type==="special"?"special":"regular";
-      const ord=hols.filter(h=>(h.type==="special"?"special":"regular")===type&&h.date.slice(0,4)===String(y)&&h.date<iso).length;
-      stores.forEach(st=>{
-        if(st.holCrew===""||st.holCrew==null)return;
-        const k=Number(st.holCrew);
-        const el=staff.map((s,i)=>i).filter(i=>staff[i].home===st.id&&auto(i));
-        const n=el.length; if(!n)return;
-        const start=(ord*k)%n, keep=new Set();
-        for(let j=0;j<Math.min(k,n);j++)keep.add(el[(start+j)%n]);
-        el.forEach(i=>{if(!keep.has(i)){P[i].base=null;P[i].forced=null;P[i].off="H"}});
-      });
-    }
     // extras go to another store
     stores.forEach(st=>{
       if(!st.overflowTo||!sById[st.overflowTo]||st.maxOnDuty===""||st.maxOnDuty==null)return;
@@ -308,14 +307,33 @@ function calc(noAbs){
       const pool=staff.map((s,i)=>i).filter(i=>staff[i].home===src.id&&movable(i)).sort((a,b)=>cnt[a].bk-cnt[b].bk||rot(a)-rot(b));
       for(const i of pool){if(short<=0)break;if(P.filter(p=>p.base===src.id).length-1<srcMin)break;P[i].base=st.id;cnt[i].bk++;short--;}
     });
+    // holidays: every store still runs a normal day (1 opener + its closers; Straight only as usual).
+    // Anyone beyond that gets the holiday off. Regular and special holidays take turns separately.
+    if(hol){
+      const type=hol.type==="special"?"special":"regular";
+      const ord=hols.filter(h=>(h.type==="special"?"special":"regular")===type&&h.date.slice(0,4)===String(y)&&h.date<iso).length;
+      stores.forEach(st=>{
+        if(st.holCrew===""||st.holCrew==null)return;
+        const keep=Math.max(holNeed(st),Number(st.holCrew)||0);
+        const crew=P.map((p,i)=>i).filter(i=>P[i].base===st.id), el=crew.filter(movable);
+        const off=Math.min(el.length,crew.length-keep); if(off<=0)return;
+        const start=(ord*off)%el.length;
+        for(let j=0;j<off;j++){const i=el[(start+j)%el.length];P[i].base=null;P[i].forced=null;P[i].off="H"}
+      });
+    }
     // shifts
     const shift=staff.map(()=>null);
     const wS=i=>cnt[i].wk[week]||0;
+    const hasRoom=i=>wS(i)<sMaxW&&cnt[i].S<sMaxM;
+    // Straights a person is expected to need later this week / month (from the first pass)
+    const fut=(list,i,sameWeek)=>list?list[i].filter(x=>x>d&&(!sameWeek||Math.floor((x-1+off0)/7)===week)).length:0;
+    const fits=(list,i)=>wS(i)+1+fut(list,i,true)<=sMaxW&&cnt[i].S+1+fut(list,i,false)<=sMaxM;
+    const rotRoom=i=>fits(resv,i);
     stores.forEach(st=>{
       const minC=Math.max(1,num(st.closers,2)), maxO=Math.max(1,num(st.maxOpen,2));
       const w=P.map((p,i)=>i).filter(i=>P[i].base===st.id), n=w.length;
-      let opens=0,closes=0;
-      w.filter(i=>P[i].forced).forEach(i=>{const L=P[i].forced;shift[i]=L;if(L==="S"||L==="O")opens++;if(L==="S"||L==="C")closes++;});
+      let opens=0,closes=0,overS=false,sCapped=false;
+      w.filter(i=>P[i].forced).forEach(i=>{const L=P[i].forced;shift[i]=L;if(L==="S"){if(!hasRoom(i))overS=true;mustDays[i].push(d)}if(L==="S"||L==="O")opens++;if(L==="S"||L==="C")closes++;});
       let free=w.filter(i=>!P[i].forced);
       // mid-shift plan
       const plan=st.mid&&Array.isArray(st.mid.weeks)&&st.mid.weeks.length&&st.mid.start?st.mid:null;
@@ -337,12 +355,20 @@ function calc(noAbs){
       const k=free.length;
       if(k){
         const needO=Math.max(0,1-opens), needC=Math.max(0,minC-closes);
-        let giveS=0;
-        if(needO>0&&needC>0&&needO+needC>k) giveS=Math.min(k,needO+needC-k);
-        else if(n>=3&&opens<maxO&&free.some(i=>wS(i)<sMin)) giveS=1;
-        if(giveS){
-          free.sort((a,b)=>wS(a)-wS(b)||cnt[a].S-cnt[b].S||rot(a)-rot(b));
-          free.splice(0,giveS).forEach(i=>{shift[i]="S";opens++;closes++});
+        const load=(i,wk)=>(wk?wS(i):cnt[i].S)+fut(resv,i,wk);
+        const fair=(a,b)=>load(a,true)-load(b,true)||load(a,false)-load(b,false)||rot(a)-rot(b);
+        const giveS=(i,must)=>{if(!hasRoom(i))overS=true;if(must)mustDays[i].push(d);shift[i]="S";opens++;closes++;free=free.filter(x=>x!==i)};
+        if(needO>0&&needC>0&&needO+needC>k){
+          const tot=Math.min(k,needO+needC-k);
+          // must: someone working alone has to open and close, even past the limit (flagged red)
+          const must=Math.min(tot,Math.max(0,(opens?0:1)+(closes?0:1)-k));
+          [...free].sort((a,b)=>hasRoom(b)-hasRoom(a)||fair(a,b)).slice(0,must).forEach(i=>giveS(i,true));
+          // only for a 2nd closer: just people still under their limit, keeping room for days they must work alone
+          const ok=free.filter(i=>hasRoom(i)&&fits(resvMust,i)).sort(fair).slice(0,tot-must);
+          ok.forEach(i=>giveS(i,false)); if(ok.length<tot-must)sCapped=true;
+        }else if(n>=3&&opens<maxO){
+          const cand=free.filter(i=>wS(i)<sMin&&rotRoom(i)).sort(fair);
+          if(cand.length)giveS(cand[0],false);
         }
         let nO=Math.max(0,1-opens);
         const nC=Math.max(0,minC-closes);
@@ -356,33 +382,50 @@ function calc(noAbs){
       let opn=w.filter(i=>shift[i]==="O"||shift[i]==="S"), trainAlone=false;
       if(opn.length&&opn.every(tr)){
         const t=opn.find(i=>!P[i].forced), sw=w.find(i=>!tr(i)&&!P[i].forced&&(shift[i]==="C"||shift[i]==="M"));
-        if(t!=null&&sw!=null){const a=shift[t];shift[t]=shift[sw];shift[sw]=a}else trainAlone=true;
+        if(t!=null&&sw!=null){
+          // a Straight only moves to someone still under the limit; otherwise they open together with the trainee
+          if(shift[t]==="S"&&!hasRoom(sw)){if(shift[sw]==="C")closes--;shift[sw]="O";opens++;sCapped=true}
+          else{const a=shift[t];shift[t]=shift[sw];shift[sw]=a}
+        }else trainAlone=true;
       }
       if(plan){const wi=Math.floor((dnum(iso)-dnum(plan.start))/7);w.forEach(i=>{if(shift[i]==="M"){cnt[i].mw[wi]=(cnt[i].mw[wi]||0)+1;midGiven[st.id+"|"+wi]=(midGiven[st.id+"|"+wi]||0)+1}})}
-      let chk="";
+      let chk="", note="";
       if(!n){if(staff.some(s=>s.home===st.id))chk="No staff"}
       else if(!opens)chk="No opener";
-      else if(n>1&&closes<minC)chk="Need closer";
+      else if(!closes)chk="No closer";
+      else if(overS)chk="Too many S";
+      else if(n>1&&closes<minC&&!sCapped)chk="Need closer";
       else if(trainAlone)chk="Trainee alone";
-      storeDay[st.id].push({n,chk,who:w.map(i=>[i,shift[i]])});
+      if(!chk&&n>1&&closes<minC&&sCapped)note="1 closer only";
+      storeDay[st.id].push({n,chk,note,who:w.map(i=>[i,shift[i]])});
     });
     staff.forEach((s,i)=>{
       const p=P[i];
-      if(p.base){const L=shift[i];cnt[i][L]++;if(L==="S")cnt[i].wk[week]=(cnt[i].wk[week]||0)+1;
+      if(p.base){const L=shift[i];cnt[i][L]++;if(L==="S"){cnt[i].wk[week]=(cnt[i].wk[week]||0)+1;sDays[i].push(d)}
         if(hol){hol.type==="special"?cnt[i].spec++:cnt[i].reg++}
         grid[i].push({k:L,store:p.base,disp:L+(p.base!==s.home?"-"+(sById[p.base].code||"?"):"")});}
       else{cnt[i].off++;grid[i].push({k:p.off==="H"?"H":p.off==="X"?"X":p.off==="AB"?"A":"L",store:null,disp:p.off,weekly:p.weekly})}
     });
   }
-  return {N,days,grid,cnt,storeDay,sById};
+  return {N,days,grid,cnt,storeDay,sById,sDays,mustDays};
 }
 // Absent: only the absent day is re-planned; every other day stays exactly as before.
+const monthCache={};
+function entriesFor(k){if(monthCache[k])return monthCache[k];if(!conn.url){const v=lsGet(LSM+k);return (v&&v.entries)||{}}return null}
+function prevCarry(){
+  const {y,m}=cur, back=(new Date(y,m-1,1).getDay()+6)%7; if(!back)return null;
+  const py=m===1?y-1:y, pm=m===1?12:m-1, pe=entriesFor(mkey(py,pm)); if(!pe)return null;
+  const keep={cur,entries}; let R;
+  try{cur={y:py,m:pm};entries=pe;R=calc(false,null)}finally{cur=keep.cur;entries=keep.entries}
+  return cfg.staff.map((s,i)=>R.grid[i].slice(R.N-back).filter(c=>c.k==="S").length);
+}
 function compute(){
   const absDays=new Set();
   Object.values(entries).forEach(e=>Object.entries(e).forEach(([d,v])=>{if(v==="AB")absDays.add(+d)}));
-  const A=calc(false); A.changes=[];
+  const carry=prevCarry();
+  const A=calc(false,carry); A.changes=[];
   if(!absDays.size)return A;
-  const B=calc(true), staff=cfg.staff, changes=[];
+  const B=calc(true,carry), staff=cfg.staff, changes=[];
   const grid=B.grid.map((row,i)=>row.map((c,j)=>{
     if(!absDays.has(j+1))return c;
     const a=A.grid[i][j];
@@ -484,7 +527,7 @@ function renderDayoffs(){
       const ids=staff.map((s,i)=>i).filter(i=>staff[i].home===st.id); if(!ids.length)return;
       body+=`<tr class="storehead"><td class="name">${esc(st.name)}</td><td colspan="${sub.length+TOT.length}"></td></tr>`;
       body+=ids.map(i=>{const s=staff[i], e=entries[s.id]||{};
-        return `<tr><td class="name" title="${esc(s.name)}">${esc(s.name)}</td>${idx.map(j=>`<td class="${cls(days[j])}">${cellBtn(s,days[j].d,e[days[j].d]||"",grid[i][j])}</td>`).join("")}${month?[cnt[i].off,cnt[i].S,cnt[i].O,cnt[i].C,cnt[i].M].map((v,k)=>`<td class="tot${k?"":" first"}">${v}</td>`).join(""):""}</tr>`}).join("");
+        return `<tr><td class="name" title="${esc(s.name)}">${esc(s.name)}</td>${idx.map(j=>`<td class="${cls(days[j])}">${cellBtn(s,days[j].d,e[days[j].d]||"",grid[i][j])}</td>`).join("")}${month?[cnt[i].off,cnt[i].S,cnt[i].O,cnt[i].C,cnt[i].M].map((v,k)=>`<td class="tot${k?"":" first"}${k===1&&v>sLimM()?" over":""}">${v}</td>`).join(""):""}</tr>`}).join("");
     });
     board=`<div class="store${month?"":" week"}"><div class="scroll"><table class="grid">${headRows(sub,month?extra:null)}<tbody>${body}</tbody></table></div></div>`;
   }
@@ -530,7 +573,7 @@ function refreshDayoffs(){
     R.days.forEach((x,j)=>{const b=tr.querySelector(`button.dc[data-d="${x.d}"]`);if(b)b.outerHTML=cellBtn(s,x.d,e[x.d]||"",R.grid[i][j])});
     const res=tr.querySelector(".dres"); if(res)res.innerHTML=resultText(R.grid[i][fd-1],s);
     const tds=tr.querySelectorAll("td.tot"), c=R.cnt[i];
-    [c.off,c.S,c.O,c.C,c.M].forEach((v,k)=>{if(tds[k])tds[k].textContent=v});
+    [c.off,c.S,c.O,c.C,c.M].forEach((v,k)=>{if(tds[k]){tds[k].textContent=v;if(k===1)tds[k].classList.toggle("over",v>sLimM())}});
   });
 }
 function setHdr(){const h=$("#hdr");if(h)document.documentElement.style.setProperty("--hdr",h.offsetHeight+8+"px")}
@@ -547,7 +590,7 @@ function dayBoard(R,j){
     const away=staff.map((s,i)=>i).filter(i=>staff[i].home===st.id&&grid[i][j].store!==st.id).map(i=>{const c=grid[i][j];
       return `<b>${esc(staff[i].name)}</b> ${c.store?"at "+esc(sById[c.store]?.name||""):offWord(c).toLowerCase()}`});
     return `<section class="store"><h3>${esc(st.name)} <span class="rule">${who.length} working</span></h3>
-      ${sd.chk?`<p class="warnline">Needs help: ${esc(sd.chk)}</p>`:""}
+      ${sd.chk?`<p class="warnline">Needs help: ${esc(sd.chk)}</p>`:""}${sd.note?`<p class="warnline note">Only 1 closer: everyone here already has their Straights for the week or month.</p>`:""}
       <div class="timeline">${who.length?`<div class="axis"><span>Open</span><span>Midday</span><span>Close</span></div>${lanes}`:`<p class="hint">Nobody works here today.</p>`}
       ${away.length?`<p class="offline">Not here: ${away.join(", ")}</p>`:""}${who.some(x=>grid[x[0]][j].chg)?`<p class="offline">✱ moved to cover an absent person</p>`:""}</div></section>`}).join("")}</div>`;
 }
@@ -561,8 +604,8 @@ function renderSchedule(){
       const who=storeDay[st.id][j].who; if(!who.length)return `<div class="tstore"><b>${esc(st.name)}</b><span class="hint">Nobody scheduled</span></div>`;
       return `<div class="tstore"><b>${esc(st.name)}</b>${["S","O","M","C"].map(L=>{const names=who.filter(w=>w[1]===L).map(w=>esc(staff[w[0]].name));return names.length?`<div class="tline"><i class="chip k-${L}">${WORD[L]}</i><span>${names.join(", ")}</span></div>`:""}).join("")}</div>`}).join("")}</div></section>`;
   }
-  let warn=0;
-  cfg.stores.forEach(st=>idx.forEach(j=>{if(storeDay[st.id][j].chk)warn++}));
+  let warn=0, notes=0;
+  cfg.stores.forEach(st=>idx.forEach(j=>{if(storeDay[st.id][j].chk)warn++;if(storeDay[st.id][j].note)notes++}));
   let blocks;
   if(view==="day"){
     const x=days[idx[0]];
@@ -571,15 +614,15 @@ function renderSchedule(){
     blocks=cfg.stores.map(st=>{
       const home=staff.map((s,i)=>i).filter(i=>staff[i].home===st.id);
       const vis=staff.map((s,i)=>i).filter(i=>staff[i].home!==st.id&&idx.some(j=>grid[i][j].store===st.id));
-      const rows=[...home,...vis], sd=storeDay[st.id], nW=idx.filter(j=>sd[j].chk).length;
+      const rows=[...home,...vis], sd=storeDay[st.id], nW=idx.filter(j=>sd[j].chk).length, nN=idx.filter(j=>sd[j].note).length;
       const body=rows.map(i=>{const isHome=staff[i].home===st.id;
         return `<tr><td class="name" title="${esc(staff[i].name)}">${esc(staff[i].name)}${isHome?"":` <em>${esc(sById[staff[i].home]?.name||"")}</em>`}</td>${idx.map(j=>{const c=grid[i][j];
           if(!isHome&&c.store!==st.id)return `<td class="${cls(days[j])}"></td>`;
           return `<td class="${cls(days[j])}"><span class="cell k-${isHome&&c.store&&c.store!==st.id?"V":c.k}${c.chg?" chg":""}" title="${esc((WORD[c.k]||c.disp)+(c.chg?" (changed, was "+(WORD[c.wasCell.k]||c.was)+")":""))}">${esc(isHome?c.disp:c.k)}</span></td>`}).join("")}</tr>`}).join("");
-      return `<section class="store${view==="week"?" week":""}"><h3>${esc(st.name)} <span class="rule">${ruleText(st)}</span>${nW?`<span class="warn">${nW} day${nW>1?"s":""} need help</span>`:""}</h3>
+      return `<section class="store${view==="week"?" week":""}"><h3>${esc(st.name)} <span class="rule">${ruleText(st)}</span>${nW?`<span class="warn">${nW} day${nW>1?"s":""} need help</span>`:""}${nN?`<span class="warn note">${nN} day${nN>1?"s":""} with 1 closer</span>`:""}</h3>
         ${rows.length?`<div class="scroll"><table class="grid">${headRows(sub)}<tbody>${body}
         <tr class="sub"><td class="name">People working</td>${idx.map(j=>`<td class="${cls(days[j])}">${sd[j].n}</td>`).join("")}</tr>
-        <tr class="sub chk"><td class="name">Problems</td>${idx.map(j=>`<td class="${cls(days[j])}">${sd[j].chk?`<span class="flag">${esc(sd[j].chk)}</span>`:""}</td>`).join("")}</tr>
+        <tr class="sub chk"><td class="name">Problems</td>${idx.map(j=>`<td class="${cls(days[j])}">${sd[j].chk?`<span class="flag">${esc(sd[j].chk)}</span>`:sd[j].note?`<span class="flag note">${esc(sd[j].note)}</span>`:""}</td>`).join("")}</tr>
         </tbody></table></div>`:`<p class="hint" style="padding:0 16px 16px">No staff here yet. Add them in Setup.</p>`}</section>`;
     }).join("");
   }
@@ -587,7 +630,7 @@ function renderSchedule(){
   const chHtml=ch.length?`<section class="changes"><h3>Changes because someone is absent</h3><ul>${ch.map(c=>`<li><b>${DOW[c.dow]} ${MONTHS[cur.m-1].slice(0,3)} ${c.d}:</b> ${esc(c.gone.join(", "))} absent. ${c.moved.length?"Tell them: "+esc(c.moved.join("; ")):"Nobody else needs to change."}</li>`).join("")}</ul></section>`:"";
   const span=view==="day"?"today":view==="week"?"this week":"this month";
   $("#main").innerHTML=`${viewBar(days,idx)}${todayHtml}${chHtml}
-  <p class="say">${warn?`<b>${warn} problem${warn>1?"s":""}</b> ${span}: a store is missing an opener or closer. Fix it on the Day offs page by moving someone's day off.`:`<b>All good ${span}.</b> Every store has its openers and closers.`}</p>
+  <p class="say">${warn?`<b>${warn} problem${warn>1?"s":""}</b> ${span}, shown in red below. Fix ${warn>1?"them":"it"} on the Day offs page by moving someone's day off.`:notes?`<b>No problems ${span}.</b>`:`<b>All good ${span}.</b> Every store has its openers and closers.`}${notes?` <span class="note">${notes} day${notes>1?"s have":" has"} only 1 closer because everyone there already used their Straights (most ${num((cfg.settings||{}).sMax,2)} a week, ${sLimM()} a month).</span>`:""}</p>
   ${view==="day"?"":`<div class="legend"><span><i class="chip k-O">O</i>Opening</span><span><i class="chip k-M">M</i>Mid shift</span><span><i class="chip k-C">C</i>Closing</span><span><i class="chip k-S">S</i>Straight, open to close</span><span><i class="chip k-X">X</i>Day off</span><span><i class="chip k-H">H</i>Holiday off</span><span><i class="chip k-A">AB</i>Absent</span><span><i class="chip k-C chg">C</i>Changed to cover</span><span><i class="chip k-V">C-F</i>At another store (F = Florida)</span></div>`}
   ${blocks}
   <div class="tools"><button class="btn primary" id="copy">Copy ${MONTHS[cur.m-1]} schedule</button><span class="hint" id="copymsg">Paste it into Excel, Google Sheets or Messenger.</span></div>`;
@@ -603,7 +646,7 @@ function renderSchedule(){
 const storeOpts=(sel,blank)=>(blank?`<option value="">${blank}</option>`:"")+cfg.stores.map(s=>`<option value="${s.id}"${s.id===sel?" selected":""}>${esc(s.name)}</option>`).join("");
 function sec(id,title,sub,body){return `<details class="sec" data-sec="${id}"${openSec===id?" open":""}><summary><span>${title}<small>${sub}</small></span></summary><div class="secbody">${body}</div></details>`}
 function renderSetup(){
-  const set=cfg?(cfg.settings||(cfg.settings={sMin:1,sMax:2})):{};
+  const set=cfg?(cfg.settings||(cfg.settings={sMin:1,sMax:2,sMonth:6})):{};
   let html="";
   if(cfgLoaded){
     // staff
@@ -628,20 +671,20 @@ function renderSetup(){
         <label class="f">Short code<input class="t code" id="stc-${st.id}" data-f="code" value="${esc(st.code)}"></label>
         <label class="f">Openers, most<input class="t num" type="number" min="1" max="3" id="sto-${st.id}" data-n="maxOpen" value="${num(st.maxOpen,2)}"></label>
         <label class="f">Closers needed<input class="t num" type="number" min="1" max="4" id="stcl-${st.id}" data-n="closers" value="${num(st.closers,2)}"></label>
-        <label class="f">Work on holidays<input class="t num" type="number" min="0" id="sthc-${st.id}" data-n="holCrew" value="${st.holCrew??""}" placeholder="all"></label></div>
+        <label class="f">Work on holidays<input class="t num" type="number" min="${holNeed(st)}" id="sthc-${st.id}" data-n="holCrew" value="${st.holCrew===""||st.holCrew==null?"":Math.max(holNeed(st),Number(st.holCrew)||0)}" placeholder="all"></label></div>
       <div class="tools"><label class="f">Most people here<input class="t num" type="number" min="1" id="stmx-${st.id}" data-n="maxOnDuty" value="${st.maxOnDuty??""}" placeholder="any"></label>
         <label class="f">Extra people go to<select class="t" id="stov-${st.id}" data-f="overflowTo">${storeOpts(st.overflowTo||"","Stay here")}</select></label>
         <label class="f">If nobody, borrow from<select class="t" id="stbk-${st.id}" data-f="backupFrom">${storeOpts(st.backupFrom||"","Nobody")}</select></label></div>
       ${midHtml}
       <div class="delwrap"><button class="btn danger" data-del="store">Remove store</button></div></div>`}).join("");
     html+=sec("stores","Stores and shift rules","Openers, closers, mid shifts, who covers who",`
-      <div class="subcard"><h4>Straight shifts</h4><p class="hint">Straight means open to close, so it counts as an opener and a closer. A person working alone always gets Straight. Otherwise the roster tries to give each person this many Straights a week:</p>
-      <div class="tools"><label class="f">At least<input class="t num" type="number" min="0" max="7" id="smin" value="${num(set.sMin,1)}"></label><label class="f">At most<input class="t num" type="number" min="0" max="7" id="smax" value="${num(set.sMax,2)}"></label></div></div>
+      <div class="subcard"><h4>Straight shifts</h4><p class="hint">Straight means open to close, so it counts as an opener and a closer. Each person gets at most this many Straights. When everyone at a store has reached the limit, the store gets 1 closer that day instead (marked in yellow). Someone working alone still gets Straight, and that day is marked red if it goes over.</p>
+      <div class="tools"><label class="f">Most a week<input class="t num" type="number" min="0" max="7" id="smax" value="${num(set.sMax,2)}"></label><label class="f">Most a month<input class="t num" type="number" min="0" max="31" id="smon" value="${num(set.sMonth,6)}"></label><label class="f">Try to give each week<input class="t num" type="number" min="0" max="7" id="smin" value="${num(set.sMin,1)}"></label></div></div>
       ${storeCards}<div><button class="btn primary" id="addstore">Add a store</button></div>`);
     // holidays
     const list=(cfg.holidays||[]).map((h,i)=>({...h,i})).sort((a,b)=>(a.date||"9").localeCompare(b.date||"9"));
     html+=sec("holidays","Holidays",`${list.length} dates · regular and special share the days off evenly`,`
-      <p class="hint">Regular holidays (double pay) and special non-working days (+30%) take turns separately, so everyone gets the same share of both. "Work on holidays" for each store is set under Stores.</p>
+      <p class="hint">On a holiday every store still runs a normal day: 1 opener and its usual closers, with Straight only when it would be given anyway. Anyone extra gets the holiday off. Regular holidays (double pay) and special non-working days (+30%) take turns separately, so everyone gets the same share of both. "Work on holidays" under Stores can raise how many work; leave it empty for everyone.</p>
       <div class="rows">${list.map(h=>`<div class="row" data-kind="hol" data-i="${h.i}"><input class="t" type="date" id="hd-${h.i}" data-f="date" value="${esc(h.date)}">
         <select class="t" id="ht-${h.i}" data-f="type"><option value="regular"${h.type!=="special"?" selected":""}>Regular</option><option value="special"${h.type==="special"?" selected":""}>Special</option></select>
         <input class="t" id="hn-${h.i}" data-f="name" value="${esc(h.name)}" style="flex:1;min-width:12ch"><button class="btn danger" data-del="hol">Remove</button></div>`).join("")}</div>
@@ -668,7 +711,7 @@ function bindSetup(set){
     $("#cmsg").textContent="Connecting…";cfgLoaded=false;loadAll(true);});
   if(!cfgLoaded)return;
   m.addEventListener("change",e=>{const t=e.target;
-    if(t.id==="smin"||t.id==="smax"){set[t.id==="smin"?"sMin":"sMax"]=Number(t.value||0);saveCfg();return}
+    if(t.id==="smin"||t.id==="smax"||t.id==="smon"){set[{smin:"sMin",smax:"sMax",smon:"sMonth"}[t.id]]=Number(t.value||0);saveCfg();return}
     const box=t.closest("[data-kind]"); if(!box)return; const kind=box.dataset.kind, i=+box.dataset.i;
     if(kind==="staff"){const s=cfg.staff[i];s[t.dataset.f]=t.dataset.f==="name"?t.value.trim().toUpperCase():t.value;if(t.dataset.f==="name")t.value=s.name;saveCfg();}
     if(kind==="hol"){cfg.holidays[i][t.dataset.f]=t.value.trim();saveCfg();}
@@ -677,6 +720,7 @@ function bindSetup(set){
         if(t.dataset.f==="code"&&/^(S|O|C|M|X|W|H|VL|SL|AB)$/.test(v)){t.value=st.code;return}
         if(v===st.id)v="";st[t.dataset.f]=v;if(t.tagName==="INPUT")t.value=v;}
       if(t.dataset.n)st[t.dataset.n]=t.value===""?"":Number(t.value);
+      if(t.dataset.n==="holCrew"&&t.value!==""){st.holCrew=Math.max(holNeed(st),Number(t.value));t.value=st.holCrew}
       if(t.dataset.mid)st.mid.start=t.value;
       if(t.dataset.mw!=null)st.mid.weeks[+t.dataset.mw][t.dataset.sid]=Number(t.value||0);
       saveCfg();}
@@ -734,9 +778,11 @@ async function loadAll(first){
     const j=await api({action:"load",month:k});
     if(seq!==loadSeq)return;
     const c=j.config||{};
-    if(!pendingCfg)cfg={stores:c.stores||[],staff:c.staff||[],holidays:c.holidays||[],settings:c.settings||{sMin:1,sMax:2}};
+    if(!pendingCfg)cfg={stores:c.stores||[],staff:c.staff||[],holidays:c.holidays||[],settings:c.settings||{sMin:1,sMax:2,sMonth:6}};
     if(pendingMonth!==k)entries=(j.month&&j.month.entries)||{};
     cfgLoaded=true;loadErr="";setStatus("Saved ✓");
+    {const pk=cur.m===1?mkey(cur.y-1,12):mkey(cur.y,cur.m-1);
+     if(conn.url&&!monthCache[pk])api({action:"load",month:pk}).then(r=>{monthCache[pk]=(r.month&&r.month.entries)||{};if(seq===loadSeq&&tab!=="setup")render()}).catch(()=>{});}
     if(first&&tab==="setup"&&openSec==="connect")tab="dayoffs";
   }catch(e){if(seq!==loadSeq)return;loadErr=/fetch/i.test(String(e.message||e))?"The sheet couldn't be reached.":String(e.message||e);setStatus("Not connected",true)}
   render();
@@ -757,6 +803,7 @@ async function flushMonth(k){
   catch(e){pendingMonth=null;setStatus("Not saved!",true)}
 }
 function step(dir,f){
+  monthCache[mkey(cur.y,cur.m)]=entries;
   if(pendingMonth){clearTimeout(monthTimer);flushMonth(pendingMonth)}
   let m=cur.m+dir,y=cur.y;if(m<1){m=12;y--}if(m>12){m=1;y++}cur={y,m};entries={};{const N2=new Date(y,m,0).getDate();fd=f==null?defaultDay():f<1?N2+f:f;}
   render();loadAll();
