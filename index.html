@@ -172,6 +172,7 @@ input.t.code{width:7ch;text-transform:uppercase}
 .days button.uw{width:58px;height:52px;display:grid;place-content:center;gap:1px;line-height:1.1}
 button[data-train][aria-pressed="true"]{background:var(--o);color:var(--o-ink);border-color:var(--o-ink)}
 .days button.uw small{font-size:.68rem;font-weight:600}
+.days button[data-co][aria-pressed="true"]{background:var(--c);color:var(--c-ink);border-color:transparent}
 .days button.uw[class*="k-"]{border-color:transparent}
 .subcard{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:12px}
 .subcard h4{margin:0;font-weight:800}
@@ -217,7 +218,7 @@ const DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
 const LETTERS="SOCM";
 const WORD={S:"Straight",O:"Opening",C:"Closing",M:"Mid shift",X:"Day off",H:"Holiday off",VL:"Vacation leave",SL:"Sick leave",AB:"Absent"};
-const DEFAULT_CFG={"stores":[{"id":"asc","name":"ASCOMO","code":"A","holCrew":2,"maxOnDuty":2,"overflowTo":"flo","minOnDuty":1,"backupFrom":"res","maxOpen":1,"closers":1},{"id":"flo","name":"FLORIDA","code":"F","holCrew":3,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":2,"closers":2},{"id":"por","name":"PORAC","code":"P","holCrew":3,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":2,"closers":2},{"id":"res","name":"RESETTLE","code":"R","holCrew":2,"maxOnDuty":"","overflowTo":"","minOnDuty":1,"backupFrom":"","maxOpen":1,"closers":1},{"id":"cal","name":"CALOOCAN","code":"CAL","holCrew":2,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":1,"closers":1,"mid":{"start":"2026-11-02","weeks":[{"lala":2,"lee":1,"jr":1},{"lala":1,"lee":2,"jr":1},{"lala":1,"lee":1,"jr":2}]}}],"staff":[{"id":"jerald","name":"JERALD","home":"asc","week":{}},{"id":"arjay","name":"ARJAY","home":"asc","week":{}},{"id":"carmi","name":"CARMI","home":"flo","week":{}},{"id":"kate","name":"KATE","home":"flo","week":{}},{"id":"bryan","name":"BRYAN","home":"asc","week":{}},{"id":"sarah","name":"SARAH","home":"por","week":{}},{"id":"marnella","name":"MARNELLA","home":"por","week":{}},{"id":"jomel","name":"JOMEL","home":"por","week":{"Mon":"","Tue":"C","Wed":"O","Thu":"C","Fri":"C","Sat":"O","Sun":"X"}},{"id":"jenny","name":"JENNY","home":"por","week":{},"trainee":true},{"id":"jun","name":"JUN","home":"res","week":{}},{"id":"jonas","name":"JONAS","home":"res","week":{}},{"id":"lala","name":"LALA","home":"cal","week":{}},{"id":"lee","name":"LEE","home":"cal","week":{}},{"id":"jr","name":"JR","home":"cal","week":{}}],"holidays":[{"date":"2026-01-01","name":"New Year's Day","type":"regular"},{"date":"2026-02-17","name":"Chinese New Year","type":"special"},{"date":"2026-03-20","name":"Eid'l Fitr","type":"regular"},{"date":"2026-04-02","name":"Maundy Thursday","type":"regular"},{"date":"2026-04-03","name":"Good Friday","type":"regular"},{"date":"2026-04-04","name":"Black Saturday","type":"special"},{"date":"2026-04-09","name":"Araw ng Kagitingan","type":"regular"},{"date":"2026-05-01","name":"Labor Day","type":"regular"},{"date":"2026-06-12","name":"Independence Day","type":"regular"},{"date":"2026-08-21","name":"Ninoy Aquino Day","type":"special"},{"date":"2026-08-31","name":"National Heroes Day","type":"regular"},{"date":"2026-11-01","name":"All Saints' Day","type":"special"},{"date":"2026-11-02","name":"All Souls' Day","type":"special"},{"date":"2026-11-30","name":"Bonifacio Day","type":"regular"},{"date":"2026-12-08","name":"Immaculate Conception","type":"special"},{"date":"2026-12-24","name":"Christmas Eve","type":"special"},{"date":"2026-12-25","name":"Christmas Day","type":"regular"},{"date":"2026-12-30","name":"Rizal Day","type":"regular"},{"date":"2026-12-31","name":"Last Day of the Year","type":"special"}],"settings":{"sMin":1,"sMax":2,"sMonth":6}};
+const DEFAULT_CFG={"stores":[{"id":"asc","name":"ASCOMO","code":"A","holCrew":2,"maxOnDuty":2,"overflowTo":"flo","minOnDuty":1,"backupFrom":"res","maxOpen":1,"closers":1,"closeOnly":{"days":["Sun"],"min":1,"max":2}},{"id":"flo","name":"FLORIDA","code":"F","holCrew":3,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":2,"closers":2,"closeOnly":{"days":["Sun"],"min":2,"max":3}},{"id":"por","name":"PORAC","code":"P","holCrew":3,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":2,"closers":2},{"id":"res","name":"RESETTLE","code":"R","holCrew":2,"maxOnDuty":"","overflowTo":"","minOnDuty":1,"backupFrom":"","maxOpen":1,"closers":1},{"id":"cal","name":"CALOOCAN","code":"CAL","holCrew":2,"maxOnDuty":"","overflowTo":"","minOnDuty":"","backupFrom":"","maxOpen":1,"closers":1,"mid":{"start":"2026-11-02","weeks":[{"lala":2,"lee":1,"jr":1},{"lala":1,"lee":2,"jr":1},{"lala":1,"lee":1,"jr":2}]}}],"staff":[{"id":"jerald","name":"JERALD","home":"asc","week":{}},{"id":"arjay","name":"ARJAY","home":"asc","week":{}},{"id":"carmi","name":"CARMI","home":"flo","week":{}},{"id":"kate","name":"KATE","home":"flo","week":{}},{"id":"bryan","name":"BRYAN","home":"asc","week":{}},{"id":"sarah","name":"SARAH","home":"por","week":{}},{"id":"marnella","name":"MARNELLA","home":"por","week":{}},{"id":"jomel","name":"JOMEL","home":"por","week":{"Mon":"","Tue":"C","Wed":"O","Thu":"C","Fri":"C","Sat":"O","Sun":"X"}},{"id":"jenny","name":"JENNY","home":"por","week":{},"trainee":true},{"id":"jun","name":"JUN","home":"res","week":{}},{"id":"jonas","name":"JONAS","home":"res","week":{}},{"id":"lala","name":"LALA","home":"cal","week":{}},{"id":"lee","name":"LEE","home":"cal","week":{}},{"id":"jr","name":"JR","home":"cal","week":{}}],"holidays":[{"date":"2026-01-01","name":"New Year's Day","type":"regular"},{"date":"2026-02-17","name":"Chinese New Year","type":"special"},{"date":"2026-03-20","name":"Eid'l Fitr","type":"regular"},{"date":"2026-04-02","name":"Maundy Thursday","type":"regular"},{"date":"2026-04-03","name":"Good Friday","type":"regular"},{"date":"2026-04-04","name":"Black Saturday","type":"special"},{"date":"2026-04-09","name":"Araw ng Kagitingan","type":"regular"},{"date":"2026-05-01","name":"Labor Day","type":"regular"},{"date":"2026-06-12","name":"Independence Day","type":"regular"},{"date":"2026-08-21","name":"Ninoy Aquino Day","type":"special"},{"date":"2026-08-31","name":"National Heroes Day","type":"regular"},{"date":"2026-11-01","name":"All Saints' Day","type":"special"},{"date":"2026-11-02","name":"All Souls' Day","type":"special"},{"date":"2026-11-30","name":"Bonifacio Day","type":"regular"},{"date":"2026-12-08","name":"Immaculate Conception","type":"special"},{"date":"2026-12-24","name":"Christmas Eve","type":"special"},{"date":"2026-12-25","name":"Christmas Day","type":"regular"},{"date":"2026-12-30","name":"Rizal Day","type":"regular"},{"date":"2026-12-31","name":"Last Day of the Year","type":"special"}],"settings":{"sMin":1,"sMax":2,"sMonth":6}};
 const LSC="tftg-roster-config", LSM="tftg-roster-month:";
 const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
@@ -239,6 +240,9 @@ function setStatus(t,bad){const s=$("#status");s.textContent=t;s.classList.toggl
 const num=(v,d)=>v===""||v==null||isNaN(Number(v))?d:Number(v);
 const USUAL=["","X","O","C","S","M"], USUALW={"":"Any",X:"Off",O:"Open",C:"Close",S:"Straight",M:"Mid"};
 const holNeed=st=>1+Math.max(1,num(st.closers,2)); // a normal day: 1 opener + the store's closers
+// closing-only days (e.g. Sundays at Ascomo/Florida): {min,max} people that day, or null
+const closeOnlyOn=(st,dow)=>{const c=st.closeOnly;if(!c||!Array.isArray(c.days)||!c.days.includes(DOW[dow]))return null;
+  const mn=Math.max(0,num(c.min,1));return {min:mn,max:Math.max(mn,1,num(c.max,2))}};
 const sLimM=()=>num((cfg&&cfg.settings||{}).sMonth,6);
 function usualDay(s,d){const w=s.week||{};if(w[d]!=null&&w[d]!=="")return w[d];return (s.weekly||[]).includes(d)?"X":""}
 
@@ -298,11 +302,23 @@ function calcCore(noAbs,opt){
     const auto=i=>P[i].raw===""&&P[i].base===staff[i].home;
     const movable=i=>auto(i)&&!P[i].fixed;
     // extras go to another store
+    const co=Object.fromEntries(stores.map(st=>[st.id,closeOnlyOn(st,dow)]));
+    const onDuty=id=>P.filter(p=>p.base===id).length;
     stores.forEach(st=>{
-      if(!st.overflowTo||!sById[st.overflowTo]||st.maxOnDuty===""||st.maxOnDuty==null)return;
+      const mx=co[st.id]?co[st.id].max:(st.maxOnDuty===""||st.maxOnDuty==null?null:Number(st.maxOnDuty));
+      if(!st.overflowTo||!sById[st.overflowTo]||mx==null)return;
       const here=P.map((p,i)=>i).filter(i=>P[i].base===st.id);
-      const extra=here.length-Number(st.maxOnDuty); if(extra<=0)return;
+      let extra=here.length-mx; if(extra<=0)return;
+      const dco=co[st.overflowTo]; if(dco)extra=Math.min(extra,Math.max(0,dco.max-onDuty(st.overflowTo)));
       here.filter(movable).sort((a,b)=>cnt[a].ov-cnt[b].ov||rot(a)-rot(b)).slice(0,extra).forEach(i=>{P[i].base=st.overflowTo;cnt[i].ov++});
+    });
+    // closing-only day short of people: the store whose extras go there tops it up (down to its own minimum)
+    stores.forEach(st=>{
+      const dco=st.overflowTo&&co[st.overflowTo]; if(!dco)return;
+      let short=dco.min-onDuty(st.overflowTo); if(short<=0)return;
+      const srcMin=co[st.id]?co[st.id].min:num(st.minOnDuty,1);
+      const pool=P.map((p,i)=>i).filter(i=>P[i].base===st.id&&movable(i)).sort((a,b)=>cnt[a].ov-cnt[b].ov||rot(a)-rot(b));
+      for(const i of pool){if(short<=0||onDuty(st.id)-1<srcMin)break;P[i].base=st.overflowTo;cnt[i].ov++;short--}
     });
     // short store borrows from another store
     stores.forEach(st=>{
@@ -319,7 +335,7 @@ function calcCore(noAbs,opt){
       const ord=hols.filter(h=>(h.type==="special"?"special":"regular")===type&&h.date.slice(0,4)===String(y)&&h.date<iso).length;
       stores.forEach(st=>{
         if(st.holCrew===""||st.holCrew==null)return;
-        const keep=Math.max(holNeed(st),Number(st.holCrew)||0);
+        const c=co[st.id];let keep=Math.max(c?c.min:holNeed(st),Number(st.holCrew)||0);if(c)keep=Math.min(keep,c.max);
         const crew=P.map((p,i)=>i).filter(i=>P[i].base===st.id), el=crew.filter(movable);
         const off=Math.min(el.length,crew.length-keep); if(off<=0)return;
         const tk=type==="special"?"offP":"offR", pos=i=>mod(el.indexOf(i)-ord,el.length);
@@ -344,8 +360,10 @@ function calcCore(noAbs,opt){
       let opens=0,closes=0,overS=false,sCapped=false,holAgain=false;
       w.filter(i=>P[i].forced).forEach(i=>{const L=P[i].forced;shift[i]=L;if(L==="S"){if(!hasRoom(i))overS=true;mustDays[i].push(d)}if(L==="S"||L==="O")opens++;if(L==="S"||L==="C")closes++;});
       let free=w.filter(i=>!P[i].forced);
+      const coDay=co[st.id];
+      if(coDay){free.forEach(i=>{shift[i]="C";closes++});free=[]}
       // mid-shift plan
-      const plan=st.mid&&Array.isArray(st.mid.weeks)&&st.mid.weeks.length&&st.mid.start?st.mid:null;
+      const plan=!coDay&&st.mid&&Array.isArray(st.mid.weeks)&&st.mid.weeks.length&&st.mid.start?st.mid:null;
       let quota=null, wkey=null;
       if(plan){
         const wi=Math.floor((dnum(iso)-dnum(plan.start))/7), row=plan.weeks[mod(wi,plan.weeks.length)]||{};
@@ -391,7 +409,7 @@ function calcCore(noAbs,opt){
       // trainees never open alone
       const tr=i=>!!staff[i].trainee;
       let opn=w.filter(i=>shift[i]==="O"||shift[i]==="S"), trainAlone=false;
-      if(opn.length&&opn.every(tr)){
+      if(!coDay&&opn.length&&opn.every(tr)){
         const t=opn.find(i=>!P[i].forced), sw=w.find(i=>!tr(i)&&!P[i].forced&&(shift[i]==="C"||shift[i]==="M"));
         if(t!=null&&sw!=null){
           // a Straight only moves to someone still under the limit; otherwise they open together with the trainee
@@ -402,6 +420,7 @@ function calcCore(noAbs,opt){
       if(plan){const wi=Math.floor((dnum(iso)-dnum(plan.start))/7);w.forEach(i=>{if(shift[i]==="M"){cnt[i].mw[wi]=(cnt[i].mw[wi]||0)+1;midGiven[st.id+"|"+wi]=(midGiven[st.id+"|"+wi]||0)+1}})}
       let chk="", note="";
       if(!n){if(staff.some(s=>s.home===st.id))chk="No staff"}
+      else if(coDay){if(closes<coDay.min)chk="Need closer";else if(n>coDay.max)note="Too many";}
       else if(!opens)chk="No opener";
       else if(!closes)chk="No closer";
       else if(overS)chk="Too many S";
@@ -496,7 +515,9 @@ function scheduleTable(R){
 }
 function ruleText(st){
   const c=num(st.closers,2), o=num(st.maxOpen,2);
-  return `${o>1?"1–2 opening":"1 opening"}, ${c} closing${st.mid&&st.mid.weeks&&st.mid.weeks.length?", mid shift rotation":""}`;
+  const cd=st.closeOnly&&Array.isArray(st.closeOnly.days)?DOW.filter(d=>st.closeOnly.days.includes(d)):[];
+  const cr=cd.length?closeOnlyOn(st,DOW.indexOf(cd[0])):null;
+  return `${o>1?"1–2 opening":"1 opening"}, ${c} closing${st.mid&&st.mid.weeks&&st.mid.weeks.length?", mid shift rotation":""}${cr?`; ${cd.join(", ")}: closing only, ${cr.min===cr.max?cr.min:cr.min+"–"+cr.max} ${cr.max>1?"people":"person"}`:""}`;
 }
 
 // ======================= Month / Week / Day switch =======================
@@ -709,6 +730,9 @@ function renderSetup(){
       <div class="tools"><label class="f">Most people here<input class="t num" type="number" min="1" id="stmx-${st.id}" data-n="maxOnDuty" value="${st.maxOnDuty??""}" placeholder="any"></label>
         <label class="f">Extra people go to<select class="t" id="stov-${st.id}" data-f="overflowTo">${storeOpts(st.overflowTo||"","Stay here")}</select></label>
         <label class="f">If nobody, borrow from<select class="t" id="stbk-${st.id}" data-f="backupFrom">${storeOpts(st.backupFrom||"","Nobody")}</select></label></div>
+      <div class="f">Closing only on (tap a day)<div class="days">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>{const on=!!(st.closeOnly&&st.closeOnly.days||[]).includes(d);return `<button type="button" data-co="${d}" aria-pressed="${on}" aria-label="${d}: ${on?"closing only":"normal"}">${d.slice(0,2)}</button>`}).join("")}</div></div>
+      ${st.closeOnly&&(st.closeOnly.days||[]).length?`<div class="tools"><label class="f">People on those days, at least<input class="t num" type="number" min="0" max="9" id="stcomin-${st.id}" data-co-n="min" value="${num(st.closeOnly.min,1)}"></label><label class="f">At most<input class="t num" type="number" min="1" max="9" id="stcomax-${st.id}" data-co-n="max" value="${num(st.closeOnly.max,2)}"></label></div>
+      <p class="hint">On these days everyone here works Closing: no Opening and no Straight.</p>`:""}
       ${midHtml}
       <div class="delwrap"><button class="btn danger" data-del="store">Remove store</button></div></div>`}).join("");
     html+=sec("stores","Stores and shift rules","Openers, closers, mid shifts, who covers who",`
@@ -755,6 +779,8 @@ function bindSetup(set){
         if(v===st.id)v="";st[t.dataset.f]=v;if(t.tagName==="INPUT")t.value=v;}
       if(t.dataset.n)st[t.dataset.n]=t.value===""?"":Number(t.value);
       if(t.dataset.n==="holCrew"&&t.value!==""){st.holCrew=Math.max(holNeed(st),Number(t.value));t.value=st.holCrew}
+      if(t.dataset.coN){const c=st.closeOnly=st.closeOnly||{days:[],min:1,max:2};c[t.dataset.coN]=Math.max(t.dataset.coN==="max"?1:0,Number(t.value||0));
+        if(c.min>c.max){if(t.dataset.coN==="min")c.max=c.min;else c.min=c.max;const o=box.querySelector(`[data-co-n="${t.dataset.coN==="min"?"max":"min"}"]`);if(o)o.value=c[o.dataset.coN]}t.value=c[t.dataset.coN]}
       if(t.dataset.mid)st.mid.start=t.value;
       if(t.dataset.mw!=null)st.mid.weeks[+t.dataset.mw][t.dataset.sid]=Number(t.value||0);
       saveCfg();}
@@ -773,6 +799,8 @@ function bindSetup(set){
     if(t.dataset.yes&&box){const i=+box.dataset.i;if(box.dataset.kind==="staff")cfg.staff.splice(i,1);else{const id=cfg.stores[i].id;cfg.stores.splice(i,1);cfg.stores.forEach(s=>{if(s.overflowTo===id)s.overflowTo="";if(s.backupFrom===id)s.backupFrom=""})}saveCfg();render();return}
     if(t.dataset.no){render();return}
     if(box&&box.dataset.kind==="store"){const st=cfg.stores[+box.dataset.i];
+      const cb=t.closest("button[data-co]");
+      if(cb){const c=st.closeOnly=st.closeOnly||{days:[],min:1,max:2},d=cb.dataset.co,ix=c.days.indexOf(d);if(ix>=0)c.days.splice(ix,1);else c.days.push(d);saveCfg();render();return}
       if(t.dataset.midon){const mon=new Date();mon.setDate(mon.getDate()-((mon.getDay()+6)%7));st.mid={start:`${mon.getFullYear()}-${pad(mon.getMonth()+1)}-${pad(mon.getDate())}`,weeks:[{}]};saveCfg();render();return}
       if(t.dataset.midadd){st.mid.weeks.push({});saveCfg();render();return}
       if(t.dataset.midrm){st.mid.weeks.pop();saveCfg();render();return}
@@ -812,7 +840,8 @@ async function loadAll(first){
     const j=await api({action:"load",month:k});
     if(seq!==loadSeq)return;
     const c=j.config||{};
-    if(!pendingCfg)cfg={stores:c.stores||[],staff:c.staff||[],holidays:c.holidays||[],settings:c.settings||{sMin:1,sMax:2,sMonth:6}};
+    if(!pendingCfg){cfg={stores:c.stores||[],staff:c.staff||[],holidays:c.holidays||[],settings:c.settings||{sMin:1,sMax:2,sMonth:6}};
+      cfg.stores.forEach(st=>{if(st.closeOnly===undefined){const d=DEFAULT_CFG.stores.find(x=>x.id===st.id);if(d&&d.closeOnly)st.closeOnly=JSON.parse(JSON.stringify(d.closeOnly))}});}
     if(pendingMonth!==k)entries=(j.month&&j.month.entries)||{};
     cfgLoaded=true;loadErr="";setStatus("Saved ✓");
     {const pk=cur.m===1?mkey(cur.y-1,12):mkey(cur.y,cur.m-1);

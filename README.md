@@ -5,6 +5,7 @@ Monthly shift roster for the TFTG stores (Ascomo, Florida, Porac, Resettle, Calo
 Open the site, type each person's requested day offs, and it builds the schedule:
 
 - Florida and Porac: 1–2 openers and 2 closers. Ascomo and Resettle: 1 opener and 1 closer. Caloocan: 1 opener, 1–2 closers, plus a weekly mid-shift rotation. A Straight (S) shift counts as both an opener and a closer.
+- Closing-only days: on Sundays Ascomo has 1–2 closers and Florida 2–3 closers, with no Opening or Straight. Ascomo's extra person tops Florida up to 2. Set per store in Setup › Stores › Closing only on.
 - A Straight always comes with an opener: a 3-person day is S-O-C or O-C-C, never S-C-C, and extra people open (up to the store's most openers) before they close.
 - Straight is capped per person: at most 2 a week and 6 a month (both set in Setup), and it takes turns so it is shared fairly. When everyone at a store has used theirs, the store gets 1 closer that day (marked yellow); someone working alone still gets Straight, and if that goes over the limit the day is marked red.
 - Ascomo's extra staff close at Florida; if Ascomo has nobody, Jun or Jonas covers from Resettle.
