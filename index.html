@@ -65,6 +65,14 @@ main>*{min-width:0}
 .k-S{background:var(--s);color:var(--s-ink)} .k-O{background:var(--o);color:var(--o-ink)} .k-C{background:var(--c);color:var(--c-ink)} .k-M{background:var(--m);color:var(--m-ink)}
 .k-X,.k-L{background:var(--x);color:var(--x-ink)} .k-H{background:var(--h);color:var(--h-ink)} .k-V{background:var(--mv);color:var(--mv-ink)} .k-A{background:var(--a);color:var(--a-ink)}
 .chg{box-shadow:0 0 0 2px var(--ink) inset}
+button.cell{border:0;font:inherit;font-weight:700;font-size:.76rem;cursor:pointer;width:calc(100% - 4px);padding:0}
+.swp{position:relative}
+.swp::after{content:"⇄";position:absolute;top:-6px;right:-5px;font-size:.62rem;line-height:1;background:var(--panel);color:var(--ink);border-radius:6px;padding:1px 2px;box-shadow:0 0 0 1px var(--line)}
+.cell.on,.pick.on{outline:3px solid var(--mark);outline-offset:1px}
+button.pick{border:1.5px solid currentColor;background:transparent;color:inherit;border-radius:8px;padding:3px 9px;margin:2px 4px 2px 0;font:inherit;font-weight:700;font-size:.95rem;cursor:pointer;min-height:36px}
+.changes.swaps{border-left-color:var(--accent)}
+.btn.linkish{min-height:32px;padding:4px 10px;font-size:.85rem;margin-left:8px}
+.swapbar .say{flex:1 1 260px}
 .flag.note{background:var(--mark);color:#3a2600}
 .store h3 .warn.note,.store .warnline.note,.say .note{color:var(--note-ink)}
 .grid td.tot.over{color:var(--bad)}
@@ -225,7 +233,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const LS="tftg-roster-settings";
 let conn={url:"",pin:""};
 try{conn=Object.assign(conn,JSON.parse(localStorage.getItem(LS)||"{}"))}catch(e){}
-let cfg=null, entries={}, cur, tab="dayoffs", brush="X", openSec="", view="month", fd=0;
+let cfg=null, entries={}, cur, tab="dayoffs", brush="X", openSec="", view="month", fd=0, swapMode=false, swapPick=null;
 let cfgLoaded=false, loadErr="", pendingCfg=false, pendingMonth=null, cfgTimer=null, monthTimer=null, loadSeq=0;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -472,12 +480,54 @@ function monthHistory(){
   histMemo.key=key; histMemo.val={carry,hist};
   return histMemo.val;
 }
+// Swapped shifts: two people at the same store trade their shift for one day. Done after the schedule is made,
+// so nothing else in the month moves. Stored as entries["~swap"] = {day: [[idA,idB], ...]}.
+const SWK="~swap";
+function applySwaps(R){
+  R.swaps=[];
+  const sw=entries[SWK]; if(!sw)return R;
+  const staff=cfg.staff, ix=Object.fromEntries(staff.map((s,i)=>[s.id,i])), sMaxW=num((cfg.settings||{}).sMax,2), sMaxM=sLimM();
+  const off0=(new Date(cur.y,cur.m-1,1).getDay()+6)%7, wk=d=>Math.floor((d-1+off0)/7);
+  Object.keys(sw).map(Number).filter(d=>d>=1&&d<=R.N).sort((x,y)=>x-y).forEach(d=>{const j=d-1;
+    (sw[d]||[]).forEach(([ida,idb])=>{
+      const a=ix[ida], b=ix[idb]; if(a==null||b==null)return;
+      const ca=R.grid[a][j], cb=R.grid[b][j], rec={d,a,b,ok:false,ka:ca.k,kb:cb.k,why:"",warn:""};
+      R.swaps.push(rec);
+      if(!ca.store||!cb.store){rec.why="one of them is off that day";return}
+      if(ca.store!==cb.store){rec.why="they work at different stores that day";return}
+      if(ca.k===cb.k){rec.why="they have the same shift";return}
+      rec.ok=true;
+      R.grid[a][j]={...ca,k:cb.k,disp:cb.k+ca.disp.slice(1),sw:staff[b].name,swWas:ca.k};
+      R.grid[b][j]={...cb,k:ca.k,disp:ca.k+cb.disp.slice(1),sw:staff[a].name,swWas:cb.k};
+      R.cnt[a][ca.k]--;R.cnt[a][cb.k]++;R.cnt[b][cb.k]--;R.cnt[b][ca.k]++;
+      const sd=R.storeDay[ca.store][j];
+      sd.who=sd.who.map(([i,L])=>[i,i===a?cb.k:i===b?ca.k:L]);
+      const opn=sd.who.filter(([i,L])=>L==="O"||L==="S"), alone=opn.length>0&&opn.every(([i])=>staff[i].trainee);
+      if(alone&&!sd.chk)sd.chk="Trainee alone";else if(!alone&&sd.chk==="Trainee alone")sd.chk="";
+      [a,b].forEach(i=>{if(R.grid[i][j].k!=="S")return;
+        const all=R.grid[i].filter(c=>c.k==="S").length, inWk=R.grid[i].filter((c,jj)=>c.k==="S"&&wk(jj+1)===wk(d)).length;
+        if(inWk>sMaxW||all>sMaxM)rec.warn=`${staff[i].name} now has ${inWk>sMaxW?inWk+" Straights this week":all+" Straights this month"}.`;
+        else if(R.days[j].hol){const hd=R.days.filter(x=>x.hol).map(x=>x.d),k=hd.indexOf(d),nb=[hd[k-1],hd[k+1]].filter(Boolean);
+          if(nb.some(h=>R.grid[i][h-1].k==="S"))rec.warn=`${staff[i].name} now has Straight on two holidays in a row.`}});
+    });
+  });
+  return R;
+}
+function toggleSwap(d,a,b,removeOnly){
+  const all=entries[SWK]=entries[SWK]||{}, list=all[d]||[];
+  const had=list.some(p=>p.includes(a)&&p.includes(b)), next=list.filter(p=>!p.includes(a)&&!p.includes(b));
+  if(!had&&!removeOnly)next.push([a,b]);
+  if(next.length)all[d]=next;else delete all[d];
+  if(!Object.keys(all).length)delete entries[SWK];
+}
+function rerender(){const xs=[...document.querySelectorAll("#main .scroll")].map(e=>e.scrollLeft),y=window.scrollY;render();
+  document.querySelectorAll("#main .scroll").forEach((e,k)=>{if(xs[k])e.scrollLeft=xs[k]});window.scrollTo(0,y)}
 function compute(){
   const absDays=new Set();
   Object.values(entries).forEach(e=>Object.entries(e).forEach(([d,v])=>{if(v==="AB")absDays.add(+d)}));
   const ctx=monthHistory();
   const A=calc(false,ctx); A.changes=[];
-  if(!absDays.size)return A;
+  if(!absDays.size)return applySwaps(A);
   const B=calc(true,ctx), staff=cfg.staff, changes=[];
   const grid=B.grid.map((row,i)=>row.map((c,j)=>{
     if(!absDays.has(j+1))return c;
@@ -492,7 +542,7 @@ function compute(){
   const storeDay=Object.fromEntries(Object.keys(B.storeDay).map(k=>[k,B.storeDay[k].map((x,j)=>absDays.has(j+1)?A.storeDay[k][j]:x)]));
   const cnt=grid.map(row=>{const c={S:0,O:0,C:0,M:0,off:0,reg:0,spec:0};
     row.forEach((x,j)=>{if(x.store){c[x.k]++;const h=B.days[j].hol;if(h){h.type==="special"?c.spec++:c.reg++}}else c.off++});return c});
-  return {...B,grid,storeDay,cnt,changes};
+  return applySwaps({...B,grid,storeDay,cnt,changes});
 }
 
 // ======================= helpers =======================
@@ -641,13 +691,14 @@ function dayBoard(R,j){
     const sd=storeDay[st.id][j], who=sd.who;
     const nm=i=>esc(staff[i].name)+(staff[i].home!==st.id?` (${esc(sById[staff[i].home]?.name||"")})`:"");
     const lanes=LANES.map(([L,w,when])=>{const ppl=who.filter(x=>x[1]===L);if(!ppl.length)return "";
-      return `<div class="lane lane-${L}"><div class="seg2 k-${L}"><small>${w} · ${when}</small><b>${ppl.map(x=>nm(x[0])+(grid[x[0]][j].chg?" ✱":"")).join(", ")}</b></div></div>`}).join("");
+      return `<div class="lane lane-${L}"><div class="seg2 k-${L}"><small>${w} · ${when}</small><b>${ppl.map(x=>{const c=grid[x[0]][j],t=nm(x[0])+(c.chg?" ✱":"")+(c.sw?" ⇄":"");
+        return swapMode?`<button type="button" class="pick${swapPick&&swapPick.i===x[0]&&swapPick.d===j+1?" on":""}" data-swi="${x[0]}" data-swd="${j+1}">${t}</button>`:t}).join(swapMode?" ":", ")}</b></div></div>`}).join("");
     const away=staff.map((s,i)=>i).filter(i=>staff[i].home===st.id&&grid[i][j].store!==st.id).map(i=>{const c=grid[i][j];
       return `<b>${esc(staff[i].name)}</b> ${c.store?"at "+esc(sById[c.store]?.name||""):offWord(c).toLowerCase()}`});
     return `<section class="store"><h3>${esc(st.name)} <span class="rule">${who.length} working</span></h3>
       ${sd.chk?`<p class="warnline">Needs help: ${esc(sd.chk)}</p>`:""}${sd.note?`<p class="warnline note">Only 1 closer: nobody here can take a Straight today (they reached the limit${days[j].hol?", or had Straight on the last holiday":""}).</p>`:""}
       <div class="timeline">${who.length?`<div class="axis"><span>Open</span><span>Midday</span><span>Close</span></div>${lanes}`:`<p class="hint">Nobody works here today.</p>`}
-      ${away.length?`<p class="offline">Not here: ${away.join(", ")}</p>`:""}${who.some(x=>grid[x[0]][j].chg)?`<p class="offline">✱ moved to cover an absent person</p>`:""}</div></section>`}).join("")}</div>`;
+      ${away.length?`<p class="offline">Not here: ${away.join(", ")}</p>`:""}${who.some(x=>grid[x[0]][j].chg)?`<p class="offline">✱ moved to cover an absent person</p>`:""}${who.some(x=>grid[x[0]][j].sw)?`<p class="offline">⇄ swapped shifts</p>`:""}</div></section>`}).join("")}</div>`;
 }
 function renderSchedule(){
   const R=compute(), {days,grid,storeDay,sById}=R, staff=cfg.staff, idx=shown(days), sub=idx.map(j=>days[j]), inView=new Set(idx);
@@ -673,7 +724,8 @@ function renderSchedule(){
       const body=rows.map(i=>{const isHome=staff[i].home===st.id;
         return `<tr><td class="name" title="${esc(staff[i].name)}">${esc(staff[i].name)}${isHome?"":` <em>${esc(sById[staff[i].home]?.name||"")}</em>`}</td>${idx.map(j=>{const c=grid[i][j];
           if(!isHome&&c.store!==st.id)return `<td class="${cls(days[j])}"></td>`;
-          return `<td class="${cls(days[j])}"><span class="cell k-${isHome&&c.store&&c.store!==st.id?"V":c.k}${c.chg?" chg":""}" title="${esc((WORD[c.k]||c.disp)+(c.chg?" (changed, was "+(WORD[c.wasCell.k]||c.was)+")":""))}">${esc(isHome?c.disp:c.k)}</span></td>`}).join("")}</tr>`}).join("");
+          const tag=swapMode&&c.store?"button":"span", on=swapPick&&swapPick.i===i&&swapPick.d===j+1;
+          return `<td class="${cls(days[j])}"><${tag}${tag==="button"?` type="button" data-swi="${i}" data-swd="${j+1}"`:""} class="cell k-${isHome&&c.store&&c.store!==st.id?"V":c.k}${c.chg?" chg":""}${c.sw?" swp":""}${on?" on":""}" title="${esc((WORD[c.k]||c.disp)+(c.chg?" (changed, was "+(WORD[c.wasCell.k]||c.was)+")":"")+(c.sw?" (swapped with "+c.sw+", was "+(WORD[c.swWas]||c.swWas)+")":""))}">${esc(isHome?c.disp:c.k)}</${tag}></td>`}).join("")}</tr>`}).join("");
       return `<section class="store${view==="week"?" week":""}"><h3>${esc(st.name)} <span class="rule">${ruleText(st)}</span>${nW?`<span class="warn">${nW} day${nW>1?"s":""} need help</span>`:""}${nN?`<span class="warn note">${nN} day${nN>1?"s":""} with 1 closer</span>`:""}</h3>
         ${rows.length?`<div class="scroll"><table class="grid">${headRows(sub)}<tbody>${body}
         <tr class="sub"><td class="name">People working</td>${idx.map(j=>`<td class="${cls(days[j])}">${sd[j].n}</td>`).join("")}</tr>
@@ -684,12 +736,32 @@ function renderSchedule(){
   const ch=R.changes.filter(c=>inView.has(c.d-1));
   const chHtml=ch.length?`<section class="changes"><h3>Changes because someone is absent</h3><ul>${ch.map(c=>`<li><b>${DOW[c.dow]} ${MONTHS[cur.m-1].slice(0,3)} ${c.d}:</b> ${esc(c.gone.join(", "))} absent. ${c.moved.length?"Tell them: "+esc(c.moved.join("; ")):"Nobody else needs to change."}</li>`).join("")}</ul></section>`:"";
   const span=view==="day"?"today":view==="week"?"this week":"this month";
-  $("#main").innerHTML=`${viewBar(days,idx)}${todayHtml}${chHtml}
+  const swHtml=`<div class="tools swapbar">${swapMode?`<p class="say"><b>Swap shifts:</b> tap the first person, then the person they swap with. Both must work at the same store that day.</p><button class="btn primary" id="swapdone">Done</button>`:`<button class="btn" id="swapon">Swap two people's shifts</button>`}<span class="hint" id="swapmsg" role="status"></span></div>`;
+  const sws=R.swaps.filter(s=>inView.has(s.d-1));
+  const swList=sws.length?`<section class="changes swaps"><h3>Swapped shifts</h3><ul>${sws.map(s=>`<li><b>${DOW[days[s.d-1].dow]} ${MONTHS[cur.m-1].slice(0,3)} ${s.d}:</b> ${s.ok?`${esc(staff[s.a].name)} ${esc(WORD[s.ka])} → ${esc(WORD[s.kb])}; ${esc(staff[s.b].name)} ${esc(WORD[s.kb])} → ${esc(WORD[s.ka])}.${s.warn?` <span class="note">${esc(s.warn)}</span>`:""}`:`${esc(staff[s.a].name)} and ${esc(staff[s.b].name)}: not used because ${esc(s.why)}.`}<button class="btn linkish" data-unswap="${s.d}|${esc(staff[s.a].id)}|${esc(staff[s.b].id)}">Undo</button></li>`).join("")}</ul></section>`:"";
+  $("#main").innerHTML=`${viewBar(days,idx)}${swHtml}${todayHtml}${chHtml}${swList}
   <p class="say">${warn?`<b>${warn} problem${warn>1?"s":""}</b> ${span}, shown in red below. Fix ${warn>1?"them":"it"} on the Day offs page by moving someone's day off.`:notes?`<b>No problems ${span}.</b>`:`<b>All good ${span}.</b> Every store has its openers and closers.`}${notes?` <span class="note">${notes} day${notes>1?"s have":" has"} only 1 closer because nobody there could take another Straight (most ${num((cfg.settings||{}).sMax,2)} a week, ${sLimM()} a month, never on two holidays in a row).</span>`:""}</p>
-  ${view==="day"?"":`<div class="legend"><span><i class="chip k-O">O</i>Opening</span><span><i class="chip k-M">M</i>Mid shift</span><span><i class="chip k-C">C</i>Closing</span><span><i class="chip k-S">S</i>Straight, open to close</span><span><i class="chip k-X">X</i>Day off</span><span><i class="chip k-H">H</i>Holiday off</span><span><i class="chip k-A">AB</i>Absent</span><span><i class="chip k-C chg">C</i>Changed to cover</span><span><i class="chip k-V">C-F</i>At another store (F = Florida)</span></div>`}
+  ${view==="day"?"":`<div class="legend"><span><i class="chip k-O">O</i>Opening</span><span><i class="chip k-M">M</i>Mid shift</span><span><i class="chip k-C">C</i>Closing</span><span><i class="chip k-S">S</i>Straight, open to close</span><span><i class="chip k-X">X</i>Day off</span><span><i class="chip k-H">H</i>Holiday off</span><span><i class="chip k-A">AB</i>Absent</span><span><i class="chip k-C chg">C</i>Changed to cover</span><span><i class="chip k-O swp">O</i>Swapped</span><span><i class="chip k-V">C-F</i>At another store (F = Florida)</span></div>`}
   ${blocks}
   <div class="tools"><button class="btn primary" id="copy">Copy ${MONTHS[cur.m-1]} schedule</button><span class="hint" id="copymsg">Paste it into Excel, Google Sheets or Messenger.</span></div>`;
   bindViewBar();
+  const smsg=t=>{const el=$("#swapmsg");if(el)el.textContent=t};
+  $("#main").addEventListener("click",e=>{
+    const u=e.target.closest("[data-unswap]");
+    if(u){const [d,a,b]=u.dataset.unswap.split("|");toggleSwap(+d,a,b,true);saveMonth();rerender();smsg("Swap undone.");return}
+    if(e.target.closest("#swapon")){swapMode=true;swapPick=null;rerender();return}
+    if(e.target.closest("#swapdone")){swapMode=false;swapPick=null;rerender();return}
+    const c=e.target.closest("[data-swi]"); if(!c||!swapMode)return;
+    const i=+c.dataset.swi, d=+c.dataset.swd;
+    if(!swapPick||swapPick.d!==d){swapPick={i,d};rerender();smsg(`${staff[i].name} picked. Now tap who they swap with on ${MONTHS[cur.m-1].slice(0,3)} ${d}.`);return}
+    if(swapPick.i===i){swapPick=null;rerender();return}
+    const a=swapPick.i, ca=grid[a][d-1], cb=grid[i][d-1];
+    if(!ca.store||!cb.store||ca.store!==cb.store){smsg("Pick someone at the same store that day.");return}
+    const paired=((entries[SWK]||{})[d]||[]).some(p=>p.includes(staff[a].id)&&p.includes(staff[i].id));
+    if(!paired&&ca.k===cb.k){smsg("They already have the same shift.");return}
+    toggleSwap(d,staff[a].id,staff[i].id);swapPick=null;saveMonth();rerender();
+    smsg(paired?"Swap undone.":`Swapped ${staff[a].name} and ${staff[i].name}. Tap Done when finished.`);
+  });
   $("#copy").onclick=()=>{
     const text=scheduleTable(R).map(r=>r.join("\t")).join("\n"), msg=$("#copymsg");
     const fb=()=>{const ta=document.createElement("textarea");ta.value=text;ta.style.cssText="width:100%;height:140px";msg.replaceWith(ta);ta.select()};
