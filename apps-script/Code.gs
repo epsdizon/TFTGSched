@@ -1,11 +1,16 @@
-const PIN = ''; // Optional. Leave empty for no PIN.
-
 /*
-  TFTG Roster storage. Paste this into the "TFTG Roster Data" Google Sheet
-  (Extensions > Apps Script), then Deploy > New deployment > Web app,
-  Execute as: Me, Who has access: Anyone.
+  TFTG Roster storage for the TFTGSched website.
 
-  The "Data" tab holds the roster as JSON (one row per item).
+  One-time setup (about 3 minutes, on a computer):
+  1. Open the "TFTG Roster Data" Google Sheet in the Schedtftg folder.
+  2. Extensions > Apps Script. Delete everything in Code.gs and paste this whole file. Click Save.
+  3. Deploy > New deployment > gear icon > Web app.
+     Execute as: Me.  Who has access: Anyone.  Click Deploy.
+  4. Click Authorize access, pick your Google account. If Google says it hasn't verified the app,
+     click Advanced > Go to (unsafe) > Allow. It is your own script, working on your own sheet.
+  5. Copy the Web app URL (it ends in /exec).
+
+  The "Data" tab holds the roster as JSON, one row per item: key, data, saved at.
   Each month's finished schedule is also written to its own tab, e.g. "2026-11".
 */
 
@@ -18,22 +23,22 @@ function doPost(e) {
 }
 
 function handle_(p) {
-  if (PIN && String(p.pin || '') !== PIN) return out_({ ok: false, error: 'Wrong PIN.' });
   const ss = SpreadsheetApp.getActive();
   const data = ss.getSheetByName('Data') || ss.insertSheet('Data');
   const lock = LockService.getScriptLock();
-  lock.waitLock(15000);
+  lock.waitLock(20000);
   try {
-    if (p.action === 'load') {
-      return out_({ ok: true, config: read_(data, 'config'), month: read_(data, 'month:' + p.month) });
-    }
+    if (p.action === 'ping') return out_({ ok: true });
+    if (p.action === 'loadAll') return out_({ ok: true, config: read_(data, 'config'), months: readMonths_(data) });
+    if (p.action === 'load') return out_({ ok: true, config: read_(data, 'config'), month: read_(data, 'month:' + p.month) });
     if (p.action === 'saveConfig') {
+      if (!p.config || !Array.isArray(p.config.stores)) return out_({ ok: false, error: 'Bad roster.' });
       write_(data, 'config', p.config);
       return out_({ ok: true });
     }
     if (p.action === 'saveMonth') {
       if (!/^\d{4}-\d{2}$/.test(String(p.month))) return out_({ ok: false, error: 'Bad month.' });
-      write_(data, 'month:' + p.month, { entries: p.entries || {} });
+      write_(data, 'month:' + p.month, { entries: p.entries || {}, site: true });
       if (Array.isArray(p.table) && p.table.length) writeTab_(ss, String(p.month), p.table);
       return out_({ ok: true });
     }
@@ -55,6 +60,17 @@ function read_(sh, key) {
   const r = findRow_(sh, key);
   if (!r) return null;
   try { return JSON.parse(sh.getRange(r, 2).getValue()); } catch (e) { return null; }
+}
+
+function readMonths_(sh) {
+  const out = {}, last = sh.getLastRow();
+  if (!last) return out;
+  sh.getRange(1, 1, last, 2).getValues().forEach(function (r) {
+    const k = String(r[0]);
+    if (k.indexOf('month:') !== 0) return;
+    try { out[k.slice(6)] = JSON.parse(r[1]); } catch (e) {}
+  });
+  return out;
 }
 
 function write_(sh, key, obj) {
