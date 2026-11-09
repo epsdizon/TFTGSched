@@ -70,7 +70,7 @@ button.cell{border:0;font:inherit;font-weight:700;font-size:.76rem;cursor:pointe
 .swp::after{content:"⇄";position:absolute;top:-6px;right:-5px;font-size:.62rem;line-height:1;background:var(--panel);color:var(--ink);border-radius:6px;padding:1px 2px;box-shadow:0 0 0 1px var(--line)}
 .cell.on,.pick.on{outline:3px solid var(--mark);outline-offset:1px}
 button.pick{border:1.5px solid currentColor;background:transparent;color:inherit;border-radius:8px;padding:3px 9px;margin:2px 4px 2px 0;font:inherit;font-weight:700;font-size:.95rem;cursor:pointer;min-height:36px}
-.changes.swaps{border-left-color:var(--accent)}
+.changes.swaps,.changes.merge{border-left-color:var(--accent)}
 .btn.linkish{min-height:32px;padding:4px 10px;font-size:.85rem;margin-left:8px}
 .swapbar .say{flex:1 1 260px}
 .flag.note{background:var(--mark);color:#3a2600}
@@ -92,7 +92,7 @@ button.pick{border:1.5px solid currentColor;background:transparent;color:inherit
 .strip button.sun{background:var(--sun)} .strip button.hol{background:var(--hol)}
 .strip button[aria-pressed="true"]{background:var(--ink);color:var(--panel)} .strip button[aria-pressed="true"] small{color:var(--panel)}
 /* brushes */
-.brushes{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:10px;position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--hdr,150px));z-index:4;box-shadow:0 6px 16px -12px rgba(26,34,56,.35)}
+.brushes{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:10px;box-shadow:0 6px 16px -12px rgba(26,34,56,.35)}
 .brow{display:flex;flex-wrap:wrap;gap:8px}
 .brush{border:3px solid transparent;border-radius:12px;font-weight:700;font-size:.95rem;padding:8px 14px;min-height:46px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
 .brush[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--panel) inset}
@@ -105,11 +105,14 @@ details.more[open] summary{margin-bottom:8px}
 .store h3{font-weight:800;font-size:1.15rem;letter-spacing:-.01em;margin:0;padding:14px 16px 10px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
 .store h3 .rule{font-weight:500;font-size:.82rem;color:var(--muted)}
 .store h3 .warn{margin-left:auto;font-weight:700;font-size:.82rem;color:var(--bad)}
-.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.scroll{overflow:auto;-webkit-overflow-scrolling:touch;max-height:calc(100dvh - var(--hdr,150px) - 24px)}
+.grid thead th{position:sticky;top:0;z-index:2}
+.grid thead tr:last-child th{top:30px}
+.grid thead th.name{z-index:3}
 table.grid{border-collapse:separate;border-spacing:0;min-width:100%}
 .grid th,.grid td{border-bottom:1px solid var(--soft);text-align:center;padding:0;height:36px;min-width:42px;font-size:.8rem}
 .grid thead th{font-weight:600;color:var(--muted);background:var(--panel)}
-.grid thead tr:first-child th{font-size:.7rem;padding-top:4px}
+.grid thead tr:first-child th{font-size:.7rem;padding-top:4px;height:30px}
 .grid thead tr:last-child th{color:var(--ink);font-weight:800;font-size:.9rem;border-bottom:1px solid var(--line)}
 .grid .name{position:sticky;left:0;z-index:1;background:var(--panel);text-align:left;padding:0 12px;min-width:120px;max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700;font-size:.9rem;border-right:1px solid var(--line)}
 .grid .name em{font-style:normal;font-weight:500;color:var(--muted);font-size:.74rem}
@@ -231,8 +234,10 @@ const LSC="tftg-roster-config", LSM="tftg-roster-month:";
 const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const LS="tftg-roster-settings";
+const SHEET_URL=""; // the TFTG Roster Data sheet's Web app link; every browser uses it automatically
 let conn={url:"",pin:""};
 try{conn=Object.assign(conn,JSON.parse(localStorage.getItem(LS)||"{}"))}catch(e){}
+if(!conn.url&&!conn.off&&SHEET_URL)conn.url=SHEET_URL;
 let cfg=null, entries={}, cur, tab="dayoffs", brush="X", openSec="", view="month", fd=0, swapMode=false, swapPick=null;
 let cfgLoaded=false, loadErr="", pendingCfg=false, pendingMonth=null, cfgTimer=null, monthTimer=null, loadSeq=0;
 const $=s=>document.querySelector(s);
@@ -453,15 +458,14 @@ function calcCore(noAbs,opt){
 }
 // Absent: only the absent day is re-planned; every other day stays exactly as before.
 const monthCache={};
-function knownEntries(k){if(monthCache[k])return monthCache[k];if(!conn.url){const v=lsGet(LSM+k);return v?(v.entries||{}):null}return null}
+function knownEntries(k){if(monthCache[k])return monthCache[k];const v=lsGet(LSM+k);return v?(v.entries||{}):null}
 const histMemo={key:null,val:null};
 function monthHistory(){
   const {y,m}=cur, list=[];
   for(let k=12;k>=1;k--){let mm=m-k,yy=y;while(mm<1){mm+=12;yy--}list.push([yy,mm])}
   const known=list.map(([yy,mm])=>knownEntries(mkey(yy,mm)));
   let s=known.findIndex(e=>e!=null);
-  if(!conn.url){if(s<0)s=list.length-1}
-  else{s=list.length;while(s>0&&known[s-1]!=null)s--}
+  if(s<0)s=list.length-1;
   if(s>=list.length)return {carry:null,hist:null};
   const key=JSON.stringify([y,m,cfg,known.slice(s)]);
   if(histMemo.key===key)return histMemo.val;
@@ -634,7 +638,7 @@ function renderDayoffs(){
       body+=ids.map(i=>{const s=staff[i], e=entries[s.id]||{};
         return `<tr><td class="name" title="${esc(s.name)}">${esc(s.name)}</td>${idx.map(j=>`<td class="${cls(days[j])}">${cellBtn(s,days[j].d,e[days[j].d]||"",grid[i][j])}</td>`).join("")}${month?[cnt[i].off,cnt[i].S,cnt[i].O,cnt[i].C,cnt[i].M].map((v,k)=>`<td class="tot${k?"":" first"}${k===1&&v>sLimM()?" over":""}">${v}</td>`).join(""):""}</tr>`}).join("");
     });
-    board=`<div class="store${month?"":" week"}"><div class="scroll"><table class="grid">${headRows(sub,month?extra:null)}<tbody>${body}</tbody></table></div></div>`;
+    board=`<div class="store${month?"":" week"}"><div class="scroll fit"><table class="grid">${headRows(sub,month?extra:null)}<tbody>${body}</tbody></table></div></div>`;
   }
   const nextM=cur.m===12?MONTHS[0]:MONTHS[cur.m];
   $("#main").innerHTML=`${viewBar(days,idx)}
@@ -681,7 +685,8 @@ function refreshDayoffs(){
     [c.off,c.S,c.O,c.C,c.M].forEach((v,k)=>{if(tds[k]){tds[k].textContent=v;if(k===1)tds[k].classList.toggle("over",v>sLimM())}});
   });
 }
-function setHdr(){const h=$("#hdr");if(h)document.documentElement.style.setProperty("--hdr",h.offsetHeight+8+"px")}
+function setHdr(){const h=$("#hdr");if(h)document.documentElement.style.setProperty("--hdr",h.offsetHeight+8+"px");
+  const b=document.querySelector("#main .scroll.fit");if(b){b.style.maxHeight="";const room=window.innerHeight-(b.getBoundingClientRect().top+window.scrollY)-16;if(room>=360)b.style.maxHeight=room+"px"}}
 
 // ======================= 2. Schedule =======================
 function dayBoard(R,j){
@@ -820,8 +825,8 @@ function renderSetup(){
         <input class="t" id="hn-${h.i}" data-f="name" value="${esc(h.name)}" style="flex:1;min-width:12ch"><button class="btn danger" data-del="hol">Remove</button></div>`).join("")}</div>
       <div><button class="btn primary" id="addhol">Add a holiday</button></div>`);
   }
-  html+=sec("connect","Google Sheet backup (optional)",conn.url?(cfgLoaded?"Connected":"Not connected"):"Not needed: saving on this device",`
-    <p class="hint"><b>You don't need this.</b> No key or PIN is needed: everything already saves on this phone or computer. Only do these steps if you also want a copy in the <b>TFTG Roster Data</b> sheet, or want to use the same roster on another device. To stop using the sheet, empty the box and press Connect.</p>
+  html+=sec("connect","Google Sheet",conn.url?(loadErr?"Can't reach it right now":"Connected: every browser uses it"):"Not connected: this browser only",`
+    <p class="hint">${conn.url?"Everything is saved in your <b>TFTG Roster Data</b> Google Sheet, so every browser and phone shows the same roster. A copy is also kept on this device, so the site still opens without internet and sends your changes when it's back.":"Right now changes are saved in <b>this browser only</b>. Another browser or phone won't see them. Connect the <b>TFTG Roster Data</b> sheet to share one roster everywhere:"}</p>
     <ol class="steps"><li>Open the <b>TFTG Roster Data</b> sheet and go to <b>Extensions › Apps Script</b>.</li>
     <li>Delete what's there and paste the code from <a href="https://github.com/epsdizon/TFTGSched/blob/main/apps-script/Code.gs" target="_blank" rel="noopener">Code.gs</a>.</li>
     <li>Click <b>Deploy › New deployment › Web app</b>. Set <b>Execute as: Me</b> and <b>Who has access: Anyone</b>. Click Deploy and allow access.</li>
@@ -829,14 +834,14 @@ function renderSetup(){
     <form id="cf" class="tools" style="align-items:end">
       <label class="f" style="flex:1;min-width:220px">Web app URL<input class="t" style="width:100%" id="curl" value="${esc(conn.url)}" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
       <button class="btn primary" type="submit">Connect</button></form>
-    <p class="hint" id="cmsg">${loadErr?esc(loadErr):(cfgLoaded?(conn.url?"Connected. Everything you change is saved to the sheet.":"Saving on this device."):"")}</p>`);
+    <p class="hint" id="cmsg">${loadErr?esc(loadErr):(cfgLoaded&&conn.url?"Connected. Everything you change is saved to the sheet.":"")}</p>`);
   $("#main").innerHTML=html;
   bindSetup(set);
 }
 function bindSetup(set){
   const m=$("#main");
   m.addEventListener("toggle",e=>{const d=e.target;if(d.matches&&d.matches("details.sec")){if(d.open)openSec=d.dataset.sec;else if(openSec===d.dataset.sec)openSec=""}},true);
-  $("#cf").addEventListener("submit",e=>{e.preventDefault();conn={url:$("#curl").value.trim(),pin:""};
+  $("#cf").addEventListener("submit",e=>{e.preventDefault();const u=$("#curl").value.trim();conn={url:u,pin:"",off:!u};
     try{localStorage.setItem(LS,JSON.stringify(conn))}catch(err){}
     $("#cmsg").textContent="Connecting…";cfgLoaded=false;loadAll(true);});
   if(!cfgLoaded)return;
@@ -889,58 +894,145 @@ function render(){
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===tab));
   const old=$("#main"), fresh=old.cloneNode(false); old.replaceWith(fresh);
   if(tab==="setup")return renderSetup();
+  if(mergeAsk){fresh.innerHTML=mergeHtml();bindMerge();return}
   if(!cfgLoaded){fresh.innerHTML=loadErr?`<div class="empty"><b>Couldn't open your roster</b>${esc(loadErr)} Check the link in Setup.</div>`:`<div class="empty"><b>Loading your roster</b>Getting your stores, staff and day offs from Google Sheets.</div>`;return}
   if(!cfg.stores.length){fresh.innerHTML=`<div class="empty"><b>No stores yet</b>Add your stores and staff in Setup.</div>`;return}
   (tab==="schedule"?renderSchedule:renderDayoffs)();
 }
 
 // ======================= Google Sheet storage =======================
-async function api(body){
-  if(!conn.url){
-    if(body.action==="load")return {ok:true,config:lsGet(LSC)||DEFAULT_CFG,month:lsGet(LSM+body.month)};
-    if(body.action==="saveConfig")lsSet(LSC,body.config);
-    if(body.action==="saveMonth")lsSet(LSM+body.month,{entries:body.entries});
-    return {ok:true};
-  }
-  const r=await fetch(conn.url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...body,pin:conn.pin})});
+// Everything is saved in the Google Sheet, which every browser shares. A copy is also kept on this device,
+// so the site still opens if the sheet can't be reached; anything saved here meanwhile is sent the next time.
+const DIRTY="tftg-roster-unsent", SYNCED="tftg-roster-synced";
+const stable=o=>JSON.stringify(o,(k,v)=>v&&typeof v==="object"&&!Array.isArray(v)?Object.keys(v).sort().reduce((a,x)=>(a[x]=v[x],a),{}):v);
+const canSend=()=>!!conn.url&&lsGet(SYNCED)===conn.url;
+function localMonthsAll(){const out={};try{for(let n=0;n<localStorage.length;n++){const key=localStorage.key(n);
+  if(key&&key.startsWith(LSM)){const v=lsGet(key);if(v&&v.entries&&Object.keys(v.entries).length)out[key.slice(LSM.length)]=v}}}catch(e){}return out}
+function markDirty(key,on){const d=lsGet(DIRTY)||{};if(on)d[key]=1;else delete d[key];lsSet(DIRTY,d)}
+function withMonth(k,e,fn){const [y,m]=k.split("-").map(Number),keep={cur,entries};try{cur={y,m};entries=e;return fn()}finally{cur=keep.cur;entries=keep.entries}}
+function tableFor(k,e){try{return withMonth(k,e,()=>scheduleTable(compute()))}catch(x){return null}}
+function setCfg(c){
+  cfg={stores:c.stores||[],staff:c.staff||[],holidays:c.holidays||[],settings:c.settings||{sMin:1,sMax:2,sMonth:6}};
+  cfg.stores.forEach(st=>{if(st.closeOnly===undefined){const d=DEFAULT_CFG.stores.find(x=>x.id===st.id);if(d&&d.closeOnly)st.closeOnly=JSON.parse(JSON.stringify(d.closeOnly))}});
+}
+async function api(body,keep){
+  const r=await fetch(conn.url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body),keepalive:!!keep});
   const j=await r.json(); if(!j.ok)throw new Error(j.error||"Save failed"); return j;
+}
+async function pushDirty(){
+  const d=lsGet(DIRTY)||{};
+  if(d.cfg){const c=lsGet(LSC);if(c)await api({action:"saveConfig",config:c});markDirty("cfg",false)}
+  for(const key of Object.keys(d).filter(x=>x.startsWith("m:"))){
+    const k=key.slice(2), v=lsGet(LSM+k);
+    if(v)await api({action:"saveMonth",month:k,entries:v.entries||{},table:tableFor(k,v.entries||{})});
+    markDirty(key,false);
+  }
+}
+// The first time a browser meets the sheet: months only this browser has are sent up; if both have
+// different versions of the same month (or Setup), the person picks which to keep. This happens once per browser.
+let mergeAsk=null;
+function mergePlan(j){
+  const sm=j.months||{}, lm=localMonthsAll(), up=[], clash=[];
+  Object.entries(lm).forEach(([k,v])=>{const s=sm[k]&&sm[k].entries;
+    if(!s||!Object.keys(s).length)up.push(k);else if(stable(s)!==stable(v.entries))clash.push(k)});
+  const lc=lsGet(LSC);
+  return {up,clash,lm,sm,cfgUp:!!lc&&!j.config,cfgClash:!!lc&&!!j.config&&stable(lc)!==stable(j.config)};
+}
+async function adopt(plan,useLocal){
+  if(plan.cfgUp||(useLocal&&plan.cfgClash))await api({action:"saveConfig",config:lsGet(LSC)});
+  for(const k of [...plan.up,...(useLocal?plan.clash:[])]){const e=plan.lm[k].entries;await api({action:"saveMonth",month:k,entries:e,table:tableFor(k,e)})}
+  lsSet(DIRTY,{});lsSet(SYNCED,conn.url);
+}
+function useSheet(j,k){
+  if(j.config){if(!pendingCfg)setCfg(j.config)}else if(!cfg)setCfg(lsGet(LSC)||DEFAULT_CFG);
+  lsSet(LSC,cfg);
+  const ms=j.months||{};
+  Object.keys(ms).forEach(mk=>{if(pendingMonth===mk)return;const e=(ms[mk]&&ms[mk].entries)||{};
+    monthCache[mk]=e;lsSet(LSM+mk,{entries:e,t:Date.now()});if(mk===k)entries=e});
+  if(!ms[k]&&pendingMonth!==k){entries={};monthCache[k]=entries}
 }
 async function loadAll(first){
   const seq=++loadSeq, k=mkey(cur.y,cur.m);
+  if(!conn.url){
+    if(!pendingCfg)setCfg(lsGet(LSC)||DEFAULT_CFG);
+    if(pendingMonth!==k){const v=lsGet(LSM+k);entries=(v&&v.entries)||{}}
+    cfgLoaded=true;loadErr="";setStatus("Saved on this browser only");render();return;
+  }
   setStatus("Loading…");
   try{
-    const j=await api({action:"load",month:k});
+    if(canSend())await pushDirty();
+    let j=await api({action:"loadAll"});
     if(seq!==loadSeq)return;
-    const c=j.config||{};
-    if(!pendingCfg){cfg={stores:c.stores||[],staff:c.staff||[],holidays:c.holidays||[],settings:c.settings||{sMin:1,sMax:2,sMonth:6}};
-      cfg.stores.forEach(st=>{if(st.closeOnly===undefined){const d=DEFAULT_CFG.stores.find(x=>x.id===st.id);if(d&&d.closeOnly)st.closeOnly=JSON.parse(JSON.stringify(d.closeOnly))}});}
-    if(pendingMonth!==k)entries=(j.month&&j.month.entries)||{};
+    if(!canSend()){
+      const plan=mergePlan(j);
+      if(plan.clash.length||plan.cfgClash){mergeAsk={plan};cfgLoaded=true;loadErr="";if(!cfg)setCfg(j.config||lsGet(LSC)||DEFAULT_CFG);setStatus("Pick which to keep",true);render();return}
+      await adopt(plan,true);
+      if(plan.up.length||plan.cfgUp){j=await api({action:"loadAll"});if(seq!==loadSeq)return}
+    }
+    mergeAsk=null;useSheet(j,k);
     cfgLoaded=true;loadErr="";setStatus("Saved ✓");
-    {const pk=cur.m===1?mkey(cur.y-1,12):mkey(cur.y,cur.m-1);
-     if(conn.url&&!monthCache[pk])api({action:"load",month:pk}).then(r=>{monthCache[pk]=(r.month&&r.month.entries)||{};if(seq===loadSeq&&tab!=="setup")render()}).catch(()=>{});}
     if(first&&tab==="setup"&&openSec==="connect")tab="dayoffs";
-  }catch(e){if(seq!==loadSeq)return;loadErr=/fetch/i.test(String(e.message||e))?"The sheet couldn't be reached.":String(e.message||e);setStatus("Not connected",true)}
+  }catch(e){
+    if(seq!==loadSeq)return;
+    // sheet not reachable: keep working with this device's copy; it is sent when the sheet is back
+    if(!cfgLoaded||!cfg)setCfg(lsGet(LSC)||DEFAULT_CFG);
+    if(pendingMonth!==k){const v=lsGet(LSM+k);entries=(v&&v.entries)||{}}
+    cfgLoaded=true;loadErr=/fetch|network|load failed|json/i.test(String(e.message||e))?"The Google Sheet couldn't be reached.":String(e.message||e);
+    setStatus("Sheet offline: saved here",true);
+  }
   render();
 }
+function mergeHtml(){
+  const {plan}=mergeAsk, n=e=>Object.values(e||{}).reduce((a,x)=>a+(x&&typeof x==="object"?Object.keys(x).length:0),0);
+  const mName=k=>{const [y,m]=k.split("-").map(Number);return `${MONTHS[m-1]} ${y}`};
+  const bx=v=>`${v} marked box${v===1?"":"es"}`;
+  const rows=plan.clash.map(k=>`<li><b>${mName(k)}:</b> this browser has ${bx(n(plan.lm[k].entries))}, the Google Sheet has ${bx(n(plan.sm[k].entries))}.</li>`).join("")
+    +(plan.cfgClash?`<li><b>Setup</b> (staff, stores, holidays) is different too.</li>`:"");
+  return `<section class="changes merge"><h3>Which changes should the site keep?</h3>
+    <p class="say">This browser has changes that are different from your Google Sheet:</p><ul>${rows}</ul>
+    <p class="hint">Pick the one with your latest work. After this, every browser uses the Google Sheet, so you only see this once.</p>
+    <div class="tools"><button class="btn primary" id="keepLocal">Keep this browser's changes</button><button class="btn" id="keepSheet">Keep the Google Sheet's</button></div></section>`;
+}
+function bindMerge(){
+  const go=async useLocal=>{const {plan}=mergeAsk;setStatus("Saving…");
+    try{await adopt(plan,useLocal);mergeAsk=null;loadAll()}catch(e){setStatus("Sheet not reached",true)}};
+  $("#keepLocal").onclick=()=>go(true);$("#keepSheet").onclick=()=>go(false);
+}
 function saveCfg(){
-  pendingCfg=true;setStatus("Saving…");clearTimeout(cfgTimer);
-  cfgTimer=setTimeout(async()=>{try{await api({action:"saveConfig",config:cfg});pendingCfg=false;setStatus("Saved ✓");saveMonth(true)}catch(e){pendingCfg=false;setStatus("Not saved!",true)}},900);
+  lsSet(LSC,cfg);
+  if(!canSend()){if(conn.url)markDirty("cfg",true);setStatus(conn.url?"Saved here":"Saved on this browser only");saveMonth(true);return}
+  markDirty("cfg",true);pendingCfg=true;setStatus("Saving…");clearTimeout(cfgTimer);
+  cfgTimer=setTimeout(()=>flushCfg(),700);
+}
+async function flushCfg(keep){
+  clearTimeout(cfgTimer);
+  try{await api({action:"saveConfig",config:cfg},keep);markDirty("cfg",false);pendingCfg=false;setStatus("Saved ✓");if(!keep)saveMonth(true)}
+  catch(e){pendingCfg=false;setStatus("Saved here, sheet not reached",true)}
 }
 function saveMonth(quiet){
   const k=mkey(cur.y,cur.m);
-  pendingMonth=k;if(!quiet)setStatus("Saving…");clearTimeout(monthTimer);
-  monthTimer=setTimeout(()=>flushMonth(k),900);
+  lsSet(LSM+k,{entries,t:Date.now()});monthCache[k]=entries;
+  if(!canSend()){if(conn.url)markDirty("m:"+k,true);if(!quiet)setStatus(conn.url?"Saved here":"Saved on this browser only");return}
+  markDirty("m:"+k,true);pendingMonth=k;if(!quiet)setStatus("Saving…");clearTimeout(monthTimer);
+  monthTimer=setTimeout(()=>flushMonth(k),700);
 }
-async function flushMonth(k){
-  const snap=JSON.parse(JSON.stringify(entries));
-  let table=null; try{table=scheduleTable(compute())}catch(e){}
-  try{await api({action:"saveMonth",month:k,entries:snap,table});if(pendingMonth===k)pendingMonth=null;setStatus("Saved ✓")}
-  catch(e){pendingMonth=null;setStatus("Not saved!",true)}
+async function flushMonth(k,keep){
+  clearTimeout(monthTimer);
+  const e=k===mkey(cur.y,cur.m)?entries:(monthCache[k]||((lsGet(LSM+k)||{}).entries)||{});
+  const snap=JSON.parse(JSON.stringify(e)), table=tableFor(k,snap);
+  try{await api({action:"saveMonth",month:k,entries:snap,table},keep);markDirty("m:"+k,false);if(pendingMonth===k)pendingMonth=null;setStatus("Saved ✓")}
+  catch(x){if(pendingMonth===k)pendingMonth=null;setStatus("Saved here, sheet not reached",true)}
 }
+// closing or leaving the page: send what is still waiting
+function flushNow(){if(!canSend())return;if(pendingCfg)flushCfg(true);if(pendingMonth)flushMonth(pendingMonth,true)}
+window.addEventListener("pagehide",flushNow);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushNow()});
 function step(dir,f){
   monthCache[mkey(cur.y,cur.m)]=entries;
-  if(pendingMonth){clearTimeout(monthTimer);flushMonth(pendingMonth)}
-  let m=cur.m+dir,y=cur.y;if(m<1){m=12;y--}if(m>12){m=1;y++}cur={y,m};entries={};{const N2=new Date(y,m,0).getDate();fd=f==null?defaultDay():f<1?N2+f:f;}
+  if(pendingMonth&&canSend())flushMonth(pendingMonth);
+  let m=cur.m+dir,y=cur.y;if(m<1){m=12;y--}if(m>12){m=1;y++}cur={y,m};
+  {const nk=mkey(y,m);entries=monthCache[nk]||((lsGet(LSM+nk)||{}).entries)||{};}
+  {const N2=new Date(y,m,0).getDate();fd=f==null?defaultDay():f<1?N2+f:f;}
   render();loadAll();
 }
 $("#prev").onclick=()=>step(-1);$("#next").onclick=()=>step(1);
